@@ -1,0 +1,43 @@
+.dropFile {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  box-sizing: border-box;
+  padding: 20px;
+  overflow: hidden;
+  pointer-events: none;
+  display: flex;
+  opacity: 0;
+  background: rgba(0, 0, 0, .5);
+  transition: opacity .25s;
+  z-index: 99999;
+}
+.hover {
+  pointer-events: all;
+  opacity: 1;
+}
+
+.border {
+  padding: 100px;
+  margin: auto;
+  border: dashed var(--accent) 4px;
+  border-radius: 25px;
+  box-sizing: border-box;
+  transition: opacity .25s;
+  display: flex;
+  pointer-events: none;
+}
+
+.hover .border {
+  background: #111;
+  animation: bounce;
+  animation-duration: .5s;
+}
+
+.icon {
+  font-size: 60px;
+  margin: auto;
+  color: var(--accent);
+}

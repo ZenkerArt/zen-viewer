@@ -1,0 +1,14 @@
+.gridImage {
+  padding: 5px;
+}
+
+.content {
+  border: 1px solid #333;
+  border-radius: 16px;
+  overflow: hidden;
+  transition: transform .2s;
+  transform: scale(.98);
+  &:hover {
+    transform: scale(1);
+  }
+}
