@@ -72,6 +72,7 @@ export class ZenGrid extends ZenComponentGroup<ZenImage> {
   private updateMaxScroll() {
     this.maxScroll = max(Object.values(this._sizes))
     this.updateClip(this.scroll)
+    return this.maxScroll
   }
 
   updateClip(offset: number) {
@@ -143,16 +144,16 @@ export class ZenGrid extends ZenComponentGroup<ZenImage> {
 
   resize() {
     this.update()
-    const newMaxScroll = max(Object.values(this._sizes))
     const oldMaxScroll = this.maxScroll
-    this.maxScroll = newMaxScroll
+    const newMaxScroll = this.updateMaxScroll()
+    const newScroll = (this.scroll / oldMaxScroll) * newMaxScroll
 
-    const scroll = (this.scroll / oldMaxScroll) * newMaxScroll
-
-    if (!isFinite(scroll)) {
+    if (!isFinite(newScroll)) {
       return
     }
-    this.scroll = scroll
+
+    this._currentOffset = newScroll
+    this.scroll = newScroll
   }
 
   setColumns(colCount: number) {
