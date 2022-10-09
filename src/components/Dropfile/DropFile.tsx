@@ -3,36 +3,44 @@ import styles from './DropFile.module.scss'
 import clsx from 'clsx'
 import MatIcon from '../MatIcon/MatIcon'
 import {MatIconCode} from '../MatIcon/MatIconCode'
-import {BlobFile} from '../../libs/files'
+import {BlobFile, ExternalFile} from '../../libs/Files/files'
 import {lstat} from 'node:fs/promises'
-console.log(lstat, 'afwefawef')
-
-const fs = window.require('node:fs')
+import {folderLoader} from '../../libs/Files/folderLoader'
 
 export type DropFileProps = {
-  onDropFiles?: (files: BlobFile[]) => void
+  onDropFiles?: (files: ExternalFile[]) => void
 }
 export type DropFileState = {
   isDrag: boolean
   image: string
 }
 
-async function filesHandler(items: FileList): Promise<BlobFile[]> {
-  const files: BlobFile[] = []
+
+async function filesHandler(items: FileList): Promise<ExternalFile[]> {
+  let files: ExternalFile[] = []
 
   if (items === undefined) {
     return []
   }
 
-  console.log(items)
-  Array.from(items).forEach(item => {
+  for (const item of Array.from(items)) {
     // @ts-ignore
-    const path = item.path
+    const path: string = item.path
 
-    console.log(fs.lstatSync(path).isDirectory())
-    // files.push(new ExternalFile(item))
-  })
-  //
+    if (path.trim() !== '') {
+      const stats = await lstat(path)
+
+      if (stats.isDirectory()) {
+        files = [
+          ...files,
+          ...await folderLoader(path)
+        ]
+        continue
+      }
+    }
+
+    files.push(new BlobFile(item))
+  }
   return files
 }
 
@@ -51,23 +59,26 @@ class DropFile extends React.Component<DropFileProps, DropFileState> {
 
   async paste(e: ClipboardEvent) {
     const items = e.clipboardData?.files
+
     if (items === undefined) {
       return
     }
+    console.log(await filesHandler(items))
 
-    await filesHandler(items)
-    this.dragLeave()
+    this.props.onDropFiles?.(await filesHandler(items))
   }
 
   async drop(event: DragEvent) {
     event.preventDefault()
     event.stopPropagation()
+    this.dragLeave()
     const items = event.dataTransfer?.files
+
     if (items === undefined) {
       return
     }
-    await filesHandler(items)
-    this.dragLeave()
+
+    this.props.onDropFiles?.(await filesHandler(items))
   }
 
   dragEnter() {
@@ -109,7 +120,8 @@ class DropFile extends React.Component<DropFileProps, DropFileState> {
     classes[styles.hover] = isDrag
 
     return <div className={clsx(styles.dropFile, classes)}
-                onDragLeave={this.dragLeave}>
+                onDragLeave={this.dragLeave}
+                onClick={this.dragLeave}>
       <div className={clsx(styles.border, 'animate__animated', {animate__bounce: isDrag})}>
         <MatIcon icon={MatIconCode.fileOpen} className={styles.icon}/>
       </div>

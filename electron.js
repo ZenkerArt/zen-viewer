@@ -1,19 +1,24 @@
 const path = require('path');
 
-const {app, BrowserWindow, contextBridge, ipcRenderer} = require('electron');
+const {app, BrowserWindow, session} = require('electron');
 const isDev = require('electron-is-dev');
 
 function createWindow() {
+    // session.defaultSession.loadExtension('./src/vpn').then(console.log)
     // Create the browser window.
     const win = new BrowserWindow({
         width: 800,
         height: 600,
         webPreferences: {
+            nodeIntegrationInWorker: true,
             nodeIntegration: true,
             contextIsolation: false,
+            webSecurity: false
         },
     });
-    win.setMenu(null)
+    app.commandLine.appendSwitch('js-flags', '--expose_gc --max-old-space-size=128')
+
+    // win.setMenu(null)
     // and load the index.html of the app.
     // win.loadFile("index.html");
     win.loadURL(

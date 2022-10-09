@@ -1,35 +1,31 @@
-import React, {ReactNode, useEffect, useState} from 'react'
+import React, {useState} from 'react'
 import './App.css'
 import DropFile from './components/Dropfile/DropFile'
-import {BlobFile} from './libs/files'
-import Grid from './components/Grid/Grid'
-import GridImage from './components/GridImage/GridImage'
+import {ExternalFile} from './libs/Files/files'
+import ContextMenu from './components/ContextMenu/ContextMenu'
+import ImagesView from './components/ImagesView/ImagesView'
+import ImagePopup from './components/ImagePopup/ImagePopup'
 
 
 function App() {
-  const [image, setImage] = useState<BlobFile[]>([])
-  const [images, setImages] = useState<ReactNode[]>([])
+  const [image, setImage] = useState<ExternalFile[]>([])
   const [colCount, setColCount] = useState(4)
-
-  useEffect(() => {
-    const asyncs: Promise<string>[] = []
-
-    image.forEach(async (item, index) => {
-      asyncs.push(item.loadImage())
-    })
-
-    Promise.all(asyncs)
-      .then(strings => strings.map(item => <GridImage src={item}/>))
-      .then(img => setImages([...images, ...img]))
-  }, [image])
+  const [gap, setGap] = useState(0)
+  const [url, setShow] = useState(0)
 
   return (
-    <div className="App" >
-      <input type="range" min={0} max={10} onChange={item => setColCount(parseFloat(item.target.value))}/>
+    <div className="App">
+      <ContextMenu/>
+      <ImagePopup/>
+      {/*<button onClick={() => sharpImage()}>test</button>*/}
+      <input type="range" min={1} max={10} onChange={item => setColCount(parseFloat(item.target.value))}
+             value={colCount}/>
+      <input type="range" min={0} max={40} onChange={item => setGap(parseFloat(item.target.value))} value={gap}/>
+      <ImagesView colCount={colCount} gap={gap} images={image}/>
       <DropFile onDropFiles={data => setImage(data)}></DropFile>
-      <Grid colCount={colCount}>{images}</Grid>
+      {/*<Grid colCount={colCount}>{images}</Grid>*/}
     </div>
-  );
+  )
 }
 
-export default App;
+export default App

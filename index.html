@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+<script>
+
+    document.addEventListener('drop', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        for (const f of event.dataTransfer.files) {
+            // Using the path attribute to get absolute file path
+            console.log('File Path of dragged files: ', f.path)
+        }
+    });
+
+    document.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    document.addEventListener('dragenter', (event) => {
+        console.log('File is in the Drop Space');
+    });
+
+    document.addEventListener('dragleave', (event) => {
+        console.log('File has left the Drop Space');
+    });
+
+</script>
+</body>
+</html>
