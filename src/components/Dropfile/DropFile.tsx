@@ -63,7 +63,6 @@ class DropFile extends React.Component<DropFileProps, DropFileState> {
     if (items === undefined) {
       return
     }
-    console.log(await filesHandler(items))
 
     this.props.onDropFiles?.(await filesHandler(items))
   }
