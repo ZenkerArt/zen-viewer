@@ -1,4 +1,5 @@
-import {Vector2, VMath} from '../../../libs/Math/Vector2'
+import {Vector2, VMath} from '../../../Libs/Math/Vector2'
+
 
 export class ZenTransform {
   private readonly _size: Vector2 = Vector2.create()

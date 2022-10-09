@@ -11,7 +11,7 @@ interface ExternalFile {
 class BlobFile implements ExternalFile {
   id: string
   path: string
-  private _file: File
+  private readonly _file: File
   // private _url?: string
 
   constructor(file: File) {

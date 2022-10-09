@@ -140,10 +140,6 @@ class ImagePopup extends React.Component<any, ImagePopupState> {
   element?: React.RefObject<HTMLImageElement> = React.createRef()
   imageControl: ImageControl = new ImageControl()
 
-  onWheel(event: WheelEvent) {
-    this.imageControl?.onWheel(event)
-  }
-
   componentDidMount() {
     if (this.image === undefined || this.element === undefined) return
     this.imageControl.element = this.element.current as HTMLDivElement
