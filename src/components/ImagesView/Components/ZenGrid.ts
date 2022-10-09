@@ -5,18 +5,8 @@ import {imagePopupStore} from '../../../store/ImageViewerStore/ImagePopupStore'
 import {Vector2} from '../../../libs/Math/Vector2'
 import {lerp} from '../../../libs/Math/Utils'
 import {ZenComponentGroup, ZenEvents} from '../Component'
-import {contextMenuStore, ContextMenuAction} from '../../../store/ContextMenuStore'
-import {MatIconCode} from '../../MatIcon/MatIconCode'
-
-class Remove extends ContextMenuAction {
-  label = 'Remove'
-  icon = MatIconCode.remove;
-
-  execute() {
-    return undefined
-  }
-
-}
+import {contextMenuStore} from '../../../store/ContextMenuStore'
+import {ContextActionRemoveFile} from '../../../store/ContextMenuStore/Actions'
 
 export class ZenGridEvents extends ZenEvents<ZenGrid> {
   onMouseWheel(event: WheelEvent) {
@@ -37,8 +27,13 @@ export class ZenGridEvents extends ZenEvents<ZenGrid> {
           })
 
         if (event.button === 2) {
-        contextMenuStore.setActions([])
-        contextMenuStore.addAction(new Remove())
+
+          contextMenuStore.showActions([
+            new ContextActionRemoveFile(item.file, () => {
+              this.component.removeImage(item)
+            })
+          ])
+
         }
       }
     })
@@ -49,14 +44,13 @@ export class ZenGridEvents extends ZenEvents<ZenGrid> {
   }
 }
 
-export class ZenGrid extends ZenComponentGroup {
+export class ZenGrid extends ZenComponentGroup<ZenImage> {
   private _images: ZenImage[] = []
   private _colCount: number = 4
   private _currentOffset: number = 0
   private _sizes: Record<number, number> = {}
   private _gap: number = 0
   private _scroll: number = 0
-  private _files: ExternalFile[] = []
   private _isLoaded: boolean = true
   events = new ZenGridEvents()
   maxScroll: number = 0
@@ -64,11 +58,6 @@ export class ZenGrid extends ZenComponentGroup {
   get images() {
     return this._images
   }
-
-  get files() {
-    return this._files
-  }
-
   set scroll(value: number) {
     this.updateMaxScroll()
 
@@ -108,7 +97,6 @@ export class ZenGrid extends ZenComponentGroup {
 
   setImages(images: ExternalFile[]) {
     if (!this._isLoaded) return
-    this._files = images
     this.scroll = 0
     this.clear()
 
@@ -118,6 +106,12 @@ export class ZenGrid extends ZenComponentGroup {
     this._images = images.map(image => new ZenImage().setFile(image as ExternalFile))
     this.addComponent(this._images)
     this.loadImages(this._images)
+  }
+
+  removeImage(image: ZenImage) {
+    this._images = this._images.filter(item => item.id !== image.id)
+    this._children = this._children.filter(item => item.id !== image.id)
+    this.update()
   }
 
   update() {

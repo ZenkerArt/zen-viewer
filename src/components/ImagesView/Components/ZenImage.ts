@@ -36,6 +36,9 @@ export class ZenImage extends ZenComponent {
   image?: ImageInfo
   isEnable: boolean = false
 
+  get id(): string {
+    return this.file.id
+  }
 
   setFile(file: ExternalFile) {
     this.file = file

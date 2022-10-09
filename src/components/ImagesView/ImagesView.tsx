@@ -149,7 +149,7 @@ export class ImagesView extends React.Component<ImagesViewProps, ImagesViewState
       if (!eq) {
         return
       }
-      this.renderCanvas.grid.files.forEach(oldItem => {
+      this.renderCanvas.grid.images.forEach(oldItem => {
         if (oldItem.id === item.id) {
           eq = false
           return
@@ -161,7 +161,7 @@ export class ImagesView extends React.Component<ImagesViewProps, ImagesViewState
       this.renderCanvas.setImages(nextProps.images || [])
     }
 
-    if (nextProps.images.length !== this.renderCanvas.grid.files.length) {
+    if (nextProps.images.length !== this.renderCanvas.grid.images.length) {
       this.renderCanvas.setImages(nextProps.images || [])
     }
     return true

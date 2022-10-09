@@ -38,8 +38,17 @@ export abstract class ZenComponent {
   protected _isDestroyed: boolean = false
   protected events?: ZenEvents<ZenComponent> = undefined
   readonly transform: ZenTransform = new ZenTransform()
+  private _id: number = 0
   canvas!: ZenCanvas
   isEnable: boolean = true
+
+  get uid() {
+    return this._id
+  }
+
+  set uid(value: number) {
+    this._id = value
+  }
 
   setCanvas(canvas: ZenCanvas) {
     this.canvas = canvas

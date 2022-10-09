@@ -1,5 +1,6 @@
 import {action, makeObservable, observable} from 'mobx'
 import {MatIconCode} from '../../components/MatIcon/MatIconCode'
+import {Vector2} from '../../libs/Math/Vector2'
 
 type BoolFunc = boolean | void | Promise<boolean> | Promise<never>
 
@@ -15,24 +16,37 @@ export abstract class ContextMenuAction {
 }
 
 export class ContextMenuStore {
-  actions: ContextMenuAction[] = []
+  @observable actions: ContextMenuAction[] = []
+  @observable isActive: boolean = false
+  @observable pos: Vector2 = Vector2.create()
 
   constructor() {
-    makeObservable(this, {
-      actions: observable,
-      addAction: action,
-      setActions: action
-    })
-
-    this.addAction = this.addAction.bind(this)
-    this.setActions = this.setActions.bind(this)
+    makeObservable(this)
   }
 
+  @action
+  setPos(pos: Vector2) {
+    this.pos = pos
+  }
+
+  @action
+  setActive(value: boolean) {
+    this.isActive = value
+  }
+
+  @action
   addAction(action: ContextMenuAction) {
     this.actions.push(action)
   }
 
+  @action
   setActions(actions: ContextMenuAction[]) {
     this.actions = actions
+  }
+
+  @action
+  showActions(actions: ContextMenuAction[]) {
+    this.setActions(actions)
+    this.isActive = true
   }
 }

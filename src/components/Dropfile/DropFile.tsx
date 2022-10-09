@@ -15,7 +15,6 @@ export type DropFileState = {
   image: string
 }
 
-
 async function filesHandler(items: FileList): Promise<ExternalFile[]> {
   let files: ExternalFile[] = []
 
