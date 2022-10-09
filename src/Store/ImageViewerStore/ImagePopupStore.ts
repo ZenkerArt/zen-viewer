@@ -1,5 +1,5 @@
 import {action, makeObservable, observable} from 'mobx'
-import {Vector2} from '../../libs/Math/Vector2'
+import {Vector2} from '../../Libs/Math/Vector2'
 
 export interface ImagePopupSpawnPoint {
   pos: Vector2

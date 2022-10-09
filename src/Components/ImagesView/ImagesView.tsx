@@ -1,10 +1,10 @@
 import React from 'react'
 import styles from './ImagesView.module.scss'
 import clsx from 'clsx'
-import {ExternalFile} from '../../libs/Files/files'
+import {ExternalFile} from '../../Libs/Files/files'
 import {ZenGrid} from './Components/ZenGrid'
 import {ZenCanvas} from './Component'
-import {Vector2} from '../../libs/Math/Vector2'
+import {Vector2} from '../../Libs/Math/Vector2'
 
 export type ImagesViewProps = {
   colCount: number

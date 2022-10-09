@@ -2,8 +2,8 @@ import React from 'react'
 import styles from './ImagePopup.module.scss'
 import clsx from 'clsx'
 import {observer} from 'mobx-react'
-import {imagePopupStore} from '../../store/ImageViewerStore/ImagePopupStore'
-import {Vector2, VMath} from '../../libs/Math/Vector2'
+import {imagePopupStore} from '../../Store/ImageViewerStore/ImagePopupStore'
+import {Vector2, VMath} from '../../Libs/Math/Vector2'
 
 interface ImagePopupState {
   pos: Vector2

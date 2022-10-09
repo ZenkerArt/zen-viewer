@@ -1,10 +1,9 @@
 import {ContextMenuAction} from '../ContextMenuStore'
-import {MatIconCode} from '../../../components/MatIcon/MatIconCode'
-import {ExternalFile} from '../../../libs/Files/files'
-import {contextMenuStore} from '../index'
+import {MatIconCode} from '../../../Components/MatIcon/MatIconCode'
+import {ExternalFile} from '../../../Libs/Files/files'
 
 export class ContextActionRemoveFile extends ContextMenuAction {
-  label = 'Remove'
+  label = 'Удалить'
   icon = MatIconCode.delete
   file: ExternalFile
   callback() {}
@@ -17,7 +16,7 @@ export class ContextActionRemoveFile extends ContextMenuAction {
 
   execute() {
     console.log('Remove', this.file.path)
-    contextMenuStore.setActive(false)
+    this.hideMenu()
     this.callback()
   }
 

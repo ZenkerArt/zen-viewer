@@ -1,4 +1,4 @@
-import {Vector2} from '../../../libs/Math/Vector2'
+import {Vector2} from '../../../Libs/Math/Vector2'
 import {ZenTransform} from './ZenTransform'
 import {ZenCanvas} from './ZenCanvas'
 

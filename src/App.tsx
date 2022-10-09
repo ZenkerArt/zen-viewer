@@ -1,10 +1,10 @@
 import React, {useState} from 'react'
 import './App.css'
-import DropFile from './components/Dropfile/DropFile'
-import {ExternalFile} from './libs/Files/files'
-import ContextMenu from './components/ContextMenu/ContextMenu'
-import ImagesView from './components/ImagesView/ImagesView'
-import ImagePopup from './components/ImagePopup/ImagePopup'
+import DropFile from './Components/Dropfile/DropFile'
+import {ExternalFile} from './Libs/Files/files'
+import ContextMenu from './Components/ContextMenu/ContextMenu'
+import ImagesView from './Components/ImagesView/ImagesView'
+import ImagePopup from './Components/ImagePopup/ImagePopup'
 
 
 function App() {

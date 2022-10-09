@@ -1,7 +1,7 @@
-import {ExternalFile} from '../../../libs/Files/files'
-import {Vector2, VMath} from '../../../libs/Math/Vector2'
+import {ExternalFile} from '../../../Libs/Files/files'
+import {Vector2, VMath} from '../../../Libs/Math/Vector2'
 import {ZenComponent} from '../Component'
-import {sharpImage} from '../../../libs/Images/Load'
+import {sharpImage} from '../../../Libs/Images/Load'
 
 class ImageInfo {
   size: Vector2 = Vector2.create()

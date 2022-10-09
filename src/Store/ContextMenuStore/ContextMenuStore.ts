@@ -1,12 +1,17 @@
 import {action, makeObservable, observable} from 'mobx'
-import {MatIconCode} from '../../components/MatIcon/MatIconCode'
-import {Vector2} from '../../libs/Math/Vector2'
+import {MatIconCode} from '../../Components/MatIcon/MatIconCode'
+import {Vector2} from '../../Libs/Math/Vector2'
+import {contextMenuStore} from './index'
 
 type BoolFunc = boolean | void | Promise<boolean> | Promise<never>
 
 export abstract class ContextMenuAction {
   icon?: MatIconCode
   label: string = ''
+
+  hideMenu() {
+    contextMenuStore.setActive(false)
+  }
 
   poll(): BoolFunc {
     return true

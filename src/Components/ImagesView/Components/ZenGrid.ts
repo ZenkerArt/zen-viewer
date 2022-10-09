@@ -1,17 +1,26 @@
 import {ZenImage} from './ZenImage'
 import {max} from 'mathjs'
-import {ExternalFile} from '../../../libs/Files/files'
-import {imagePopupStore} from '../../../store/ImageViewerStore/ImagePopupStore'
-import {Vector2} from '../../../libs/Math/Vector2'
-import {lerp} from '../../../libs/Math/Utils'
+import {ExternalFile} from '../../../Libs/Files/files'
+import {imagePopupStore} from '../../../Store/ImageViewerStore/ImagePopupStore'
+import {Vector2} from '../../../Libs/Math/Vector2'
+import {lerp} from '../../../Libs/Math/Utils'
 import {ZenComponentGroup, ZenEvents} from '../Component'
-import {contextMenuStore} from '../../../store/ContextMenuStore'
-import {ContextActionRemoveFile} from '../../../store/ContextMenuStore/Actions'
+import {contextMenuStore} from '../../../Store/ContextMenuStore'
+import {ContextActionRemoveFile, ContextActionShowFile} from '../../../Store/ContextMenuStore/Actions'
+
+function contextMenuGrid(grid: ZenGrid, item: ZenImage) {
+  return [
+    new ContextActionRemoveFile(item.file, () => {
+      grid.removeImage(item)
+    }),
+    new ContextActionShowFile(item.file)
+  ]
+}
 
 export class ZenGridEvents extends ZenEvents<ZenGrid> {
   onMouseWheel(event: WheelEvent) {
     const factor = event.deltaY > 0 ? -1 : 1
-    this.component.scroll += 50 * factor
+    this.component.smoothScroll += 50 * factor
   }
 
   onMouseDown(event: MouseEvent) {
@@ -21,19 +30,14 @@ export class ZenGridEvents extends ZenEvents<ZenGrid> {
       const collide = item.transform.isCollide(Vector2.create(event.offsetX, event.offsetY + offset))
 
       if (collide) {
-        if (event.button === 0)
+        if (event.button === 0) {
           item.file.loadUrl().then(url => {
             imagePopupStore.show(url)
           })
+        }
 
         if (event.button === 2) {
-
-          contextMenuStore.showActions([
-            new ContextActionRemoveFile(item.file, () => {
-              this.component.removeImage(item)
-            })
-          ])
-
+          contextMenuStore.showActions(contextMenuGrid(this.component, item))
         }
       }
     })
@@ -50,7 +54,7 @@ export class ZenGrid extends ZenComponentGroup<ZenImage> {
   private _currentOffset: number = 0
   private _sizes: Record<number, number> = {}
   private _gap: number = 0
-  private _scroll: number = 0
+  private _smoothScroll: number = 0
   private _isLoaded: boolean = true
   events = new ZenGridEvents()
   maxScroll: number = 0
@@ -58,20 +62,26 @@ export class ZenGrid extends ZenComponentGroup<ZenImage> {
   get images() {
     return this._images
   }
-  set scroll(value: number) {
+
+  set smoothScroll(value: number) {
     this.updateMaxScroll()
 
-    this._scroll = value
+    this._smoothScroll = value
     this.updateClip(value)
   }
 
-  get scroll() {
-    return this._scroll
+  get smoothScroll() {
+    return this._smoothScroll || 0
+  }
+
+  set scroll(value: number) {
+    this._smoothScroll = value
+    this._currentOffset = value
   }
 
   private updateMaxScroll() {
     this.maxScroll = max(Object.values(this._sizes))
-    this.updateClip(this.scroll)
+    this.updateClip(this.smoothScroll)
     return this.maxScroll
   }
 
@@ -98,7 +108,7 @@ export class ZenGrid extends ZenComponentGroup<ZenImage> {
 
   setImages(images: ExternalFile[]) {
     if (!this._isLoaded) return
-    this.scroll = 0
+    this.scroll = 1
     this.clear()
 
     // @ts-ignore
@@ -112,6 +122,7 @@ export class ZenGrid extends ZenComponentGroup<ZenImage> {
   removeImage(image: ZenImage) {
     this._images = this._images.filter(item => item.id !== image.id)
     this._children = this._children.filter(item => item.id !== image.id)
+    image.destroy()
     this.update()
   }
 
@@ -146,13 +157,12 @@ export class ZenGrid extends ZenComponentGroup<ZenImage> {
     this.update()
     const oldMaxScroll = this.maxScroll
     const newMaxScroll = this.updateMaxScroll()
-    const newScroll = (this.scroll / oldMaxScroll) * newMaxScroll
+    const newScroll = (this.smoothScroll / oldMaxScroll) * newMaxScroll
 
     if (!isFinite(newScroll)) {
       return
     }
 
-    this._currentOffset = newScroll
     this.scroll = newScroll
   }
 
@@ -171,12 +181,8 @@ export class ZenGrid extends ZenComponentGroup<ZenImage> {
   }
 
   protected render(): void {
-    this._currentOffset = lerp(this._currentOffset, this.scroll, .05)
-    const offset = this._currentOffset
+    this._currentOffset = lerp(this._currentOffset, this.smoothScroll, .05)
 
-    this.transform.position.y = offset
-
-    this.ctx.font = '48px arial'
-    this.ctx.fillText(`${offset}`, 0, 50)
+    this.transform.position.y = this._currentOffset
   }
 }

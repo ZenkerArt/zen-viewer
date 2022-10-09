@@ -3,9 +3,9 @@ import styles from './DropFile.module.scss'
 import clsx from 'clsx'
 import MatIcon from '../MatIcon/MatIcon'
 import {MatIconCode} from '../MatIcon/MatIconCode'
-import {BlobFile, ExternalFile} from '../../libs/Files/files'
+import {BlobFile, ExternalFile} from '../../Libs/Files/files'
 import {lstat} from 'node:fs/promises'
-import {folderLoader} from '../../libs/Files/folderLoader'
+import {folderLoader} from '../../Libs/Files/folderLoader'
 
 export type DropFileProps = {
   onDropFiles?: (files: ExternalFile[]) => void

@@ -3,8 +3,8 @@ import styles from './ContextMenu.module.scss'
 import clsx from 'clsx'
 import MatIcon from '../MatIcon/MatIcon'
 import {observer} from 'mobx-react'
-import {contextMenuStore} from '../../store/ContextMenuStore'
-import {Vector2} from '../../libs/Math/Vector2'
+import {contextMenuStore} from '../../Store/ContextMenuStore'
+import {Vector2} from '../../Libs/Math/Vector2'
 
 export type ContextMenuProps = {}
 export type ContextMenuState = {}

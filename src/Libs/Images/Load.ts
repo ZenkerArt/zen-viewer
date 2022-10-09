@@ -5,12 +5,15 @@ import * as Buffer from 'buffer'
 const canvas = document.createElement('canvas')
 const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
 
-export function sharpImage(path: string): Promise<HTMLImageElement> {
+export function sharpImage(path: string, rescale: number = 1024): Promise<HTMLImageElement> {
   const client = new Socket()
-  client.connect(8080, '127.0.0.1', function () {
-    client.write(path)
-  })
 
+  client.connect(8080, '127.0.0.1', function () {
+    client.write(JSON.stringify({
+      path: path,
+      rescale: rescale
+    }))
+  })
 
   return new Promise((resolve, reject) => {
     const chunks: Buffer[] = []
