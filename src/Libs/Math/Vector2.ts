@@ -43,10 +43,10 @@ export class Vector2 {
   private _x: number = 0
   private _y: number = 0
 
-  static create(x: number = 0, y: number = 0) {
+  static create(x: number = 0, y?: number) {
     const vec = new Vector2()
     vec._x = x
-    vec._y = y || x
+    vec._y = isNumber(y) ? y : x
     return vec
   }
 
