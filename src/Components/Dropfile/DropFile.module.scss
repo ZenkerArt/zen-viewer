@@ -15,6 +15,11 @@
   z-index: 99999;
 }
 
+.hover {
+  pointer-events: auto;
+  opacity: 1;
+}
+
 .border {
   padding: 100px;
   margin: auto;
