@@ -48,6 +48,24 @@ export class ZenGridEvents extends ZenEvents<ZenGrid> {
   }
 }
 
+class ImageAnchor {
+  image?: ZenImage
+  offset: number = 0
+
+  setImage(image: ZenImage, offset: number = 0) {
+    this.image = image
+    this.offset = offset
+  }
+
+  toImage(): number {
+    if (this.image === undefined) {
+      return 0
+    }
+    const transform = this.image.transform
+    return -transform.rect.top + (this.offset * transform.size.y)
+  }
+}
+
 export class ZenGrid extends ZenComponentGroup<ZenImage> {
   private _images: ZenImage[] = []
   private _colCount: number = 4
@@ -56,6 +74,8 @@ export class ZenGrid extends ZenComponentGroup<ZenImage> {
   private _gap: number = 0
   private _smoothScroll: number = 0
   private _isLoaded: boolean = true
+  private _grid: Record<number, ZenImage[]> = []
+  private _anchor = new ImageAnchor()
   events = new ZenGridEvents()
   maxScroll: number = 0
 
@@ -64,9 +84,8 @@ export class ZenGrid extends ZenComponentGroup<ZenImage> {
   }
 
   set smoothScroll(value: number) {
-    this.updateMaxScroll()
-
     this._smoothScroll = value
+    this.findAnchor(value)
     this.updateClip(value)
   }
 
@@ -77,12 +96,7 @@ export class ZenGrid extends ZenComponentGroup<ZenImage> {
   set scroll(value: number) {
     this._smoothScroll = value
     this._currentOffset = value
-  }
-
-  private updateMaxScroll() {
-    this.maxScroll = max(Object.values(this._sizes))
-    this.updateClip(this.smoothScroll)
-    return this.maxScroll
+    this.updateClip(value)
   }
 
   updateClip(offset: number) {
@@ -97,6 +111,20 @@ export class ZenGrid extends ZenComponentGroup<ZenImage> {
     }
   }
 
+  findAnchor(value: number) {
+    for (const item of this._grid[0]) {
+      const b = item.transform.rect.bottom + value > 0
+      const t = item.transform.rect.top + value < 0
+      const isCollide = t && b
+
+
+      if (isCollide) {
+        const imageOffset = (item.transform.position.y + this._smoothScroll) / item.transform.size.y
+        this._anchor.setImage(item, imageOffset)
+      }
+    }
+  }
+
   async loadImages(images: ZenImage[]) {
     this._isLoaded = false
     for (const image of images) {
@@ -108,7 +136,7 @@ export class ZenGrid extends ZenComponentGroup<ZenImage> {
 
   setImages(images: ExternalFile[]) {
     if (!this._isLoaded) return
-    this.scroll = 1
+    this.scroll = 0
     this.clear()
 
     // @ts-ignore
@@ -130,9 +158,11 @@ export class ZenGrid extends ZenComponentGroup<ZenImage> {
     let col = 0
     const gap = this._gap
     const sizes: Record<number, number> = {}
+    const grid: Record<number, ZenImage[]> = {}
 
     for (let col = 0; col < this._colCount; col++) {
       sizes[col] = 0
+      grid[col] = []
     }
 
     this._images.forEach(item => {
@@ -144,6 +174,7 @@ export class ZenGrid extends ZenComponentGroup<ZenImage> {
       position.y = sizes[col]
 
       sizes[col] += size.y + gap
+      grid[col].push(item)
 
       col += 1
       if (col >= this._colCount)
@@ -151,33 +182,25 @@ export class ZenGrid extends ZenComponentGroup<ZenImage> {
     })
 
     this._sizes = sizes
+    this._grid = grid
   }
 
   resize() {
     this.update()
-    const oldMaxScroll = this.maxScroll
-    const newMaxScroll = this.updateMaxScroll()
-    const newScroll = (this.smoothScroll / oldMaxScroll) * newMaxScroll
-
-    if (!isFinite(newScroll)) {
-      return
-    }
-
-    this.scroll = newScroll
+    this.scroll = this._anchor.toImage()
   }
 
   setColumns(colCount: number) {
     if (colCount === this._colCount) return
     this._colCount = colCount
     this.update()
-    this.updateMaxScroll()
+    this.scroll = this._anchor.toImage()
   }
 
   setGap(value: number) {
     if (value === this._gap) return
     this._gap = value
     this.update()
-    this.updateMaxScroll()
   }
 
   protected render(): void {
