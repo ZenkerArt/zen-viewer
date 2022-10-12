@@ -1,5 +1,4 @@
 import {ZenImage} from './ZenImage'
-import {max} from 'mathjs'
 import {ExternalFile} from '../../../Libs/Files/files'
 import {imagePopupStore} from '../../../Store/ImageViewerStore/ImagePopupStore'
 import {Vector2} from '../../../Libs/Math/Vector2'
@@ -7,6 +6,29 @@ import {lerp} from '../../../Libs/Math/Utils'
 import {ZenComponentGroup, ZenEvents} from '../Component'
 import {contextMenuStore} from '../../../Store/ContextMenuStore'
 import {ContextActionRemoveFile, ContextActionShowFile} from '../../../Store/ContextMenuStore/Actions'
+
+export class ImageAnchor {
+  image?: ZenImage
+  offset: number = 0
+
+  setImage(image: ZenImage, offset: number = 0) {
+    this.image = image
+    this.offset = offset
+  }
+
+  toImage(): number {
+    if (this.image === undefined) {
+      return 0
+    }
+    const transform = this.image.transform
+    return -transform.rect.top + (this.offset * transform.size.y)
+  }
+}
+
+export interface ZenGridOptions {
+  gap: number
+  colCount: number
+}
 
 function contextMenuGrid(grid: ZenGrid, item: ZenImage) {
   return [
@@ -48,36 +70,16 @@ export class ZenGridEvents extends ZenEvents<ZenGrid> {
   }
 }
 
-class ImageAnchor {
-  image?: ZenImage
-  offset: number = 0
-
-  setImage(image: ZenImage, offset: number = 0) {
-    this.image = image
-    this.offset = offset
-  }
-
-  toImage(): number {
-    if (this.image === undefined) {
-      return 0
-    }
-    const transform = this.image.transform
-    return -transform.rect.top + (this.offset * transform.size.y)
-  }
-}
-
 export class ZenGrid extends ZenComponentGroup<ZenImage> {
   private _images: ZenImage[] = []
-  private _colCount: number = 4
   private _currentOffset: number = 0
   private _sizes: Record<number, number> = {}
-  private _gap: number = 0
   private _smoothScroll: number = 0
   private _isLoaded: boolean = true
   private _grid: Record<number, ZenImage[]> = []
   private _anchor = new ImageAnchor()
+  private _options: ZenGridOptions = {gap: 0, colCount: 4}
   events = new ZenGridEvents()
-  maxScroll: number = 0
 
   get images() {
     return this._images
@@ -156,17 +158,17 @@ export class ZenGrid extends ZenComponentGroup<ZenImage> {
 
   update() {
     let col = 0
-    const gap = this._gap
+    const {gap, colCount} = this._options
     const sizes: Record<number, number> = {}
     const grid: Record<number, ZenImage[]> = {}
 
-    for (let col = 0; col < this._colCount; col++) {
+    for (let col = 0; col < colCount; col++) {
       sizes[col] = 0
       grid[col] = []
     }
 
     this._images.forEach(item => {
-      item.setWidth(this.canvas.width / this._colCount - gap)
+      item.setWidth(this.canvas.width / colCount - gap)
 
       const {position, size} = item.transform
 
@@ -177,7 +179,7 @@ export class ZenGrid extends ZenComponentGroup<ZenImage> {
       grid[col].push(item)
 
       col += 1
-      if (col >= this._colCount)
+      if (col >= colCount)
         col = 0
     })
 
@@ -190,16 +192,12 @@ export class ZenGrid extends ZenComponentGroup<ZenImage> {
     this.scroll = this._anchor.toImage()
   }
 
-  setColumns(colCount: number) {
-    if (colCount === this._colCount) return
-    this._colCount = colCount
-    this.update()
-    this.scroll = this._anchor.toImage()
-  }
-
-  setGap(value: number) {
-    if (value === this._gap) return
-    this._gap = value
+  setOptions(options: Partial<ZenGridOptions>) {
+    Object.entries(options).forEach(([key, newValue]) => {
+      const oldValue = this._options[key as keyof ZenGridOptions]
+      if (newValue === oldValue) return
+      this._options[key as keyof ZenGridOptions] = newValue
+    })
     this.update()
   }
 
