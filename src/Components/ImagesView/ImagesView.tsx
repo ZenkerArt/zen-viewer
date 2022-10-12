@@ -1,14 +1,13 @@
 import React from 'react'
 import styles from './ImagesView.module.scss'
 import clsx from 'clsx'
-import {ExternalFile} from '../../Libs/Files/files'
-import {ZenGrid} from './Components/ZenGrid'
+import {ExternalFile} from '@Libs/Files'
+import {ZenGrid, ZenGridOptions} from './Components'
 import {ZenCanvas} from './Component'
-import {Vector2} from '../../Libs/Math/Vector2'
+import {Vector2} from '@Libs/Math'
 
 export type ImagesViewProps = {
-  colCount: number
-  gap: number
+  gridOptions: ZenGridOptions
   images: ExternalFile[]
 }
 
@@ -141,8 +140,7 @@ export class ImagesView extends React.Component<ImagesViewProps, ImagesViewState
   }
 
   shouldComponentUpdate(nextProps: Readonly<ImagesViewProps>): boolean {
-    this.renderCanvas.grid.setColumns(nextProps.colCount)
-    this.renderCanvas.grid.setGap(nextProps.gap)
+    this.renderCanvas.grid.setOptions(nextProps.gridOptions)
     let eq = true
 
     nextProps.images.forEach(item => {

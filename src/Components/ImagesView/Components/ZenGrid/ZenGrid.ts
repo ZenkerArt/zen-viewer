@@ -1,29 +1,11 @@
-import {ZenImage} from './ZenImage'
-import {ExternalFile} from '../../../Libs/Files/files'
-import {imagePopupStore} from '../../../Store/ImageViewerStore/ImagePopupStore'
-import {Vector2} from '../../../Libs/Math/Vector2'
-import {lerp} from '../../../Libs/Math/Utils'
-import {ZenComponentGroup, ZenEvents} from '../Component'
-import {contextMenuStore} from '../../../Store/ContextMenuStore'
-import {ContextActionRemoveFile, ContextActionShowFile} from '../../../Store/ContextMenuStore/Actions'
+import {ExternalFile} from '@Libs/Files/Files'
+import {Vector2} from '@Libs/Math'
+import {ZenComponentGroup, ZenEvents} from '../../Component'
+import {contextMenuStore, imagePopupStore} from '@StoreIndex'
+import {ContextActionRemoveFile, ContextActionShowFile} from '@Store/ContextMenuStore/Actions'
+import {ZenGridScroll} from './ZenGridScroll'
+import {ZenImage} from '../'
 
-export class ImageAnchor {
-  image?: ZenImage
-  offset: number = 0
-
-  setImage(image: ZenImage, offset: number = 0) {
-    this.image = image
-    this.offset = offset
-  }
-
-  toImage(): number {
-    if (this.image === undefined) {
-      return 0
-    }
-    const transform = this.image.transform
-    return -transform.rect.top + (this.offset * transform.size.y)
-  }
-}
 
 export interface ZenGridOptions {
   gap: number
@@ -42,7 +24,7 @@ function contextMenuGrid(grid: ZenGrid, item: ZenImage) {
 export class ZenGridEvents extends ZenEvents<ZenGrid> {
   onMouseWheel(event: WheelEvent) {
     const factor = event.deltaY > 0 ? -1 : 1
-    this.component.smoothScroll += 50 * factor
+    this.component.scroll.smoothScroll += 100 * factor
   }
 
   onMouseDown(event: MouseEvent) {
@@ -68,40 +50,35 @@ export class ZenGridEvents extends ZenEvents<ZenGrid> {
   onResizeCanvas(oldSize: Vector2, newSize: Vector2) {
     this.component.resize()
   }
+
+  onScroll(value: number, smooth: boolean) {
+    const grid = this.component
+    if (smooth) {
+      grid.findAnchor()
+    }
+    grid.updateClip()
+  }
 }
 
 export class ZenGrid extends ZenComponentGroup<ZenImage> {
   private _images: ZenImage[] = []
-  private _currentOffset: number = 0
-  private _sizes: Record<number, number> = {}
-  private _smoothScroll: number = 0
   private _isLoaded: boolean = true
   private _grid: Record<number, ZenImage[]> = []
-  private _anchor = new ImageAnchor()
   private _options: ZenGridOptions = {gap: 0, colCount: 4}
+  readonly scroll: ZenGridScroll
   events = new ZenGridEvents()
+
+  constructor() {
+    super()
+    this.scroll = new ZenGridScroll(this.events)
+  }
 
   get images() {
     return this._images
   }
 
-  set smoothScroll(value: number) {
-    this._smoothScroll = value
-    this.findAnchor(value)
-    this.updateClip(value)
-  }
-
-  get smoothScroll() {
-    return this._smoothScroll || 0
-  }
-
-  set scroll(value: number) {
-    this._smoothScroll = value
-    this._currentOffset = value
-    this.updateClip(value)
-  }
-
-  updateClip(offset: number) {
+  updateClip() {
+    const offset = this.scroll.scroll
     const {height} = this.canvas
 
     for (const image of this._images) {
@@ -113,16 +90,19 @@ export class ZenGrid extends ZenComponentGroup<ZenImage> {
     }
   }
 
-  findAnchor(value: number) {
+  findAnchor() {
+    const value = this.scroll.scroll
     for (const item of this._grid[0]) {
-      const b = item.transform.rect.bottom + value > 0
-      const t = item.transform.rect.top + value < 0
-      const isCollide = t && b
-
+      const b = item.transform.rect.bottom + value
+      const t = item.transform.rect.top + value
+      const isCollide = t < 0 && b > 0
 
       if (isCollide) {
-        const imageOffset = (item.transform.position.y + this._smoothScroll) / item.transform.size.y
-        this._anchor.setImage(item, imageOffset)
+        this.scroll.savePositionRelativeImage({
+          image: item,
+          offset: t / item.transform.size.y,
+          smooth: false
+        })
       }
     }
   }
@@ -138,7 +118,6 @@ export class ZenGrid extends ZenComponentGroup<ZenImage> {
 
   setImages(images: ExternalFile[]) {
     if (!this._isLoaded) return
-    this.scroll = 0
     this.clear()
 
     // @ts-ignore
@@ -182,14 +161,12 @@ export class ZenGrid extends ZenComponentGroup<ZenImage> {
       if (col >= colCount)
         col = 0
     })
-
-    this._sizes = sizes
     this._grid = grid
   }
 
   resize() {
     this.update()
-    this.scroll = this._anchor.toImage()
+    this.scroll.restorePosition()
   }
 
   setOptions(options: Partial<ZenGridOptions>) {
@@ -199,11 +176,11 @@ export class ZenGrid extends ZenComponentGroup<ZenImage> {
       this._options[key as keyof ZenGridOptions] = newValue
     })
     this.update()
+    this.scroll.restorePosition()
   }
 
   protected render(): void {
-    this._currentOffset = lerp(this._currentOffset, this.smoothScroll, .05)
-
-    this.transform.position.y = this._currentOffset
+    this.scroll.update()
+    this.transform.position.y = this.scroll.smoothScroll
   }
 }

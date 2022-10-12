@@ -1,4 +1,4 @@
-import {ExternalFile} from '../Files/files'
+import {ExternalFile} from '../Files/Files'
 import {Socket} from 'node:net'
 import * as Buffer from 'buffer'
 

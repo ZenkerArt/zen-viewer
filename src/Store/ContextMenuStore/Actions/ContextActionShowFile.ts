@@ -1,5 +1,5 @@
 import {ContextMenuAction} from '../ContextMenuStore'
-import {ExternalFile} from '../../../Libs/Files/files'
+import {ExternalFile} from '@Libs/Files/Files'
 import {MatIconCode} from '../../../Components/MatIcon/MatIconCode'
 
 const electron = window.require('electron')

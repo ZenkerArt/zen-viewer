@@ -1,4 +1,4 @@
-import {ExternalFile} from '../../../Libs/Files/files'
+import {ExternalFile} from '@Libs/Files/Files'
 import {Vector2, VMath} from '../../../Libs/Math/Vector2'
 import {ZenComponent} from '../Component'
 import {sharpImage} from '../../../Libs/Images/Load'

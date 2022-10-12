@@ -1,4 +1,4 @@
-import {ExternalFile, SystemFile} from './files'
+import {ExternalFile, SystemFile} from './Files'
 import {readdir} from 'node:fs/promises'
 import {contentType} from 'mime-types'
 import {join} from 'path'

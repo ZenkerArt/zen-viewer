@@ -1,5 +1,12 @@
 {
   "compilerOptions": {
+    "baseUrl": "src",
+    "paths": {
+      "@Libs/*": ["Libs/*"],
+      "@Components/*": ["Components/*"],
+      "@Store/*": ["Store/*"],
+      "@StoreIndex": ["Store/index.ts"],
+    },
     "experimentalDecorators": true,
     "target": "es5",
     "lib": [
