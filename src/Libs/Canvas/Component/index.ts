@@ -1,7 +1,8 @@
-import {ZenComponent, ZenEvents} from './ZenComponent'
+import {ZenComponent} from './ZenComponent'
 import {ZenComponentGroup} from './ZenComponentGroup'
 import {ZenTransform} from './ZenTransform'
-import {ZenCanvas} from './ZenCanvas'
+import {ZenCanvasInfo} from './ZenCanvasInfo'
+import {ZenEvents} from './ZenEvents'
 
 export {
   ZenComponent,
@@ -11,5 +12,5 @@ export {
 }
 
 export type {
-  ZenCanvas
+  ZenCanvasInfo
 }

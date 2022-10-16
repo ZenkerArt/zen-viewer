@@ -5,10 +5,14 @@
       "@Libs/*": ["Libs/*"],
       "@Components/*": ["Components/*"],
       "@Store/*": ["Store/*"],
-      "@StoreIndex": ["Store/index.ts"],
+      "@StoreIndex": ["Store/index.ts"]
     },
     "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "target": "es5",
+    "types": [
+      "reflect-metadata"
+    ],
     "lib": [
       "dom",
       "dom.iterable",

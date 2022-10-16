@@ -1,7 +1,7 @@
 import {ExternalFile} from '@Libs/Files/Files'
-import {Vector2, VMath} from '../../../Libs/Math/Vector2'
-import {ZenComponent} from '../Component'
-import {sharpImage} from '../../../Libs/Images/Load'
+import {Vector2, VMath} from '@Libs/Math'
+import {sharpImage} from '../../Images/Load'
+import {ZenComponent} from '@Libs/Canvas/Component'
 
 class ImageInfo {
   size: Vector2 = Vector2.create()
@@ -36,6 +36,10 @@ export class ZenImage extends ZenComponent {
   image?: ImageInfo
   isEnable: boolean = false
 
+  get isLoaded() {
+    return this._loaded
+  }
+
   get id(): string {
     return this.file.id
   }
@@ -49,11 +53,12 @@ export class ZenImage extends ZenComponent {
     if (this._loaded) {
       return this
     }
-    this._loaded = true
 
     const image = await sharpImage(this.file.path)
     this.image = new ImageInfo(image)
+
     this.isEnable = true
+    this._loaded = true
     return this
   }
 
@@ -63,20 +68,30 @@ export class ZenImage extends ZenComponent {
     return this
   }
 
+  setSpawnPoint(pos: Vector2) {
+    this._pos.set(pos)
+  }
+
   protected onDestroy() {
     if (this.image)
       this.image.destroy()
   }
 
+  get deltaPos() {
+    return this._pos
+  }
+
   protected render(): void {
     const ctx = this.ctx
-    const {posOffset, size} = this.transform
+    const {offset, position, size} = this.transform
 
     if (this.image) {
-      this._pos = VMath.lerp(this._pos, posOffset, .2)
-      this._size = VMath.lerp(this._size, size, .2)
+      this._pos = VMath.lerp(this._pos, position, .1)
+      this._size = VMath.lerp(this._size, size, .1)
 
-      ctx.drawImage(this.image.element, ...this._pos.tuple, ...this._size.tuple)
+      const pos = VMath.add(this._pos, offset)
+
+      ctx.drawImage(this.image.element, ...pos.tuple, ...this._size.tuple)
     }
   }
 }

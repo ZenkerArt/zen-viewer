@@ -1,26 +1,28 @@
-import React, {useState} from 'react'
+import React, {useEffect, useRef, useState} from 'react'
 import './App.css'
 import DropFile from './Components/Dropfile/DropFile'
 import {ExternalFile} from '@Libs/Files'
 import ContextMenu from './Components/ContextMenu/ContextMenu'
-import ImagesView from './Components/ImagesView/ImagesView'
 import ImagePopup from './Components/ImagePopup/ImagePopup'
-import Range from './Components/Range/Range'
-import {ZenGridOptions} from '@Components/ImagesView/Components'
-
+import {ZenGrid} from '@Libs/Canvas/Components'
+import ImagesGrid from '@Components/ImagesGrid/ImagesGrid'
+import TitleBar from '@Components/TitleBar/TitleBar'
 
 function App() {
   const [image, setImage] = useState<ExternalFile[]>([])
-  const [gridOptions, setGridOptions] = useState<ZenGridOptions>({gap: 0, colCount: 4})
+  const {current: grid} = useRef(new ZenGrid())
+
+
+  useEffect(() => {
+    grid.setImages(image)
+  }, [grid, image])
 
   return (
     <div className="App">
+      <TitleBar/>
       <ContextMenu/>
       <ImagePopup/>
-      <Range value={gridOptions.colCount} min={1} max={10}
-             setValue={(value) => setGridOptions({...gridOptions, colCount: value})}
-             text={'Количество колонок'}/>
-      <ImagesView gridOptions={gridOptions} images={image}/>
+      <ImagesGrid grid={grid}/>
       <DropFile onDropFiles={data => setImage(data)}></DropFile>
     </div>
   )

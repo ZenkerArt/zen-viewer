@@ -1,4 +1,4 @@
-import {Vector2, VMath} from '../../../Libs/Math/Vector2'
+import {Vector2, VMath} from '@Libs/Math'
 
 
 export class ZenTransform {

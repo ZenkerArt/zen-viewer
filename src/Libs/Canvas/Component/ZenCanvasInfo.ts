@@ -1,4 +1,4 @@
-export interface ZenCanvas {
+export interface ZenCanvasInfo {
   width: number
   height: number
   element: HTMLElement

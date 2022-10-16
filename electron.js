@@ -9,11 +9,10 @@ function createWindow() {
     const win = new BrowserWindow({
         width: 800,
         height: 600,
+        frame: false,
         webPreferences: {
-            nodeIntegrationInWorker: true,
             nodeIntegration: true,
-            contextIsolation: false,
-            webSecurity: false
+            contextIsolation: false
         },
     });
     app.commandLine.appendSwitch('js-flags', '--expose_gc --max-old-space-size=128')

@@ -1,10 +1,10 @@
 import {ExternalFile} from '@Libs/Files/Files'
 import {Vector2} from '@Libs/Math'
-import {ZenComponentGroup, ZenEvents} from '../../Component'
 import {contextMenuStore, imagePopupStore} from '@StoreIndex'
 import {ContextActionRemoveFile, ContextActionShowFile} from '@Store/ContextMenuStore/Actions'
 import {ZenGridScroll} from './ZenGridScroll'
-import {ZenImage} from '../'
+import {ZenImage} from '../index'
+import {ZenComponentGroup, ZenEvents} from '@Libs/Canvas/Component'
 
 
 export interface ZenGridOptions {
@@ -22,13 +22,16 @@ function contextMenuGrid(grid: ZenGrid, item: ZenImage) {
 }
 
 export class ZenGridEvents extends ZenEvents<ZenGrid> {
-  onMouseWheel(event: WheelEvent) {
+  lastTouch: Vector2 = Vector2.create()
+
+  onWheel(event: WheelEvent) {
+    const comp = this.owner
     const factor = event.deltaY > 0 ? -1 : 1
-    this.component.scroll.smoothScroll += 100 * factor
+    comp.scroll.smoothScroll += comp.canvas.height / 5 * factor
   }
 
   onMouseDown(event: MouseEvent) {
-    this.component.images.forEach(item => {
+    this.owner.images.forEach(item => {
       const offset = 0
 
       const collide = item.transform.isCollide(Vector2.create(event.offsetX, event.offsetY + offset))
@@ -41,18 +44,28 @@ export class ZenGridEvents extends ZenEvents<ZenGrid> {
         }
 
         if (event.button === 2) {
-          contextMenuStore.showActions(contextMenuGrid(this.component, item))
+          contextMenuStore.showActions(contextMenuGrid(this.owner, item))
         }
       }
     })
   }
 
   onResizeCanvas(oldSize: Vector2, newSize: Vector2) {
-    this.component.resize()
+    this.owner.resize()
+  }
+
+  onTouchStart(event: TouchEvent) {
+    const touch = event.touches[0]
+    this.lastTouch = Vector2.create(touch.clientX, touch.clientY - this.owner.scroll.scroll)
+  }
+
+  onTouchMove(event: TouchEvent) {
+    const touch = event.touches[0]
+    this.owner.scroll.scrollY(touch.clientY - this.lastTouch.y)
   }
 
   onScroll(value: number, smooth: boolean) {
-    const grid = this.component
+    const grid = this.owner
     if (smooth) {
       grid.findAnchor()
     }
@@ -71,6 +84,7 @@ export class ZenGrid extends ZenComponentGroup<ZenImage> {
   constructor() {
     super()
     this.scroll = new ZenGridScroll(this.events)
+    this.update = this.update.bind(this)
   }
 
   get images() {
@@ -111,7 +125,12 @@ export class ZenGrid extends ZenComponentGroup<ZenImage> {
     this._isLoaded = false
     for (const image of images) {
       await image.load()
-      this.update()
+      this.update((item) => {
+        if (item.id === image.id) {
+          const {position} = item.transform
+          item.setSpawnPoint(position)
+        }
+      })
     }
     this._isLoaded = true
   }
@@ -135,7 +154,7 @@ export class ZenGrid extends ZenComponentGroup<ZenImage> {
     this.update()
   }
 
-  update() {
+  update(handler?: (item: ZenImage) => void) {
     let col = 0
     const {gap, colCount} = this._options
     const sizes: Record<number, number> = {}
@@ -157,15 +176,23 @@ export class ZenGrid extends ZenComponentGroup<ZenImage> {
       sizes[col] += size.y + gap
       grid[col].push(item)
 
+      if (handler) {
+        handler(item)
+      }
+
       col += 1
       if (col >= colCount)
         col = 0
     })
+
     this._grid = grid
   }
 
   resize() {
-    this.update()
+    this.update(item => {
+      const {position} = item.transform
+      item.setSpawnPoint(Vector2.create(item.deltaPos.x, position.y))
+    })
     this.scroll.restorePosition()
   }
 

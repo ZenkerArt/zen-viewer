@@ -1,4 +1,4 @@
 import { contextMenuStore } from "./ContextMenuStore";
-import { imagePopupStore } from "./ImageViewerStore/ImagePopupStore";
+import { imagePopupStore } from "./ImagePopupStore/ImagePopupStore";
 
 export {contextMenuStore, imagePopupStore}

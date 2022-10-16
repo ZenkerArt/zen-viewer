@@ -44,10 +44,17 @@ export class Vector2 {
   private _y: number = 0
 
   static create(x: number = 0, y?: number) {
-    const vec = new Vector2()
-    vec._x = x
-    vec._y = isNumber(y) ? y : x
-    return vec
+    return new Vector2().set(x, y)
+  }
+
+  static createFromEvent(event: {clientX: number, clientY: number } | TouchEvent) {
+    if ('touches' in event) {
+      const e = event.touches[0]
+      return  Vector2.create(e.clientX, e.clientY)
+    }
+    else {
+      return  Vector2.create(event.clientX, event.clientY)
+    }
   }
 
   get x(): number {
@@ -77,13 +84,12 @@ export class Vector2 {
 
   set(x: number | Vector2 = 0, y?: number) {
     if (typeof x === 'object') {
-      this._x = x.x
-      this._y = x.y
+      this.set(x.x, x.y)
       return this
     }
 
     this._x = x || 0
-    this._y = y || this._y
+    this._y = isNumber(y) ? y : x
 
     return this
   }

@@ -1,0 +1,27 @@
+.imagesGrid {
+  height: calc(100vh - var(--titlebar-size));
+  position: relative;
+  overflow: hidden;
+}
+
+.ui {
+  transform: translateY(-100%);
+  width: 100vw;
+  position: absolute;
+  top: 0;
+  left: 0;
+  box-sizing: border-box;
+  transition: transform .2s;
+  padding: 10px;
+
+  > div{
+    margin-bottom: 10px;
+    background: #111;
+    padding: 20px;
+    border-radius: 10px;
+  }
+
+  &.show {
+    transform: translateY(0);
+  }
+}

@@ -1,3 +1,7 @@
+.App {
+  border-radius: 10px;
+}
+
 html {
   background: #222;
 }

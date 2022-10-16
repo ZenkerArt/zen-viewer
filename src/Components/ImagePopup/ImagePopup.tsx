@@ -4,28 +4,91 @@ import clsx from 'clsx'
 import {observer} from 'mobx-react'
 import {imagePopupStore} from '@StoreIndex'
 import {Vector2, VMath} from '@Libs/Math'
+import {ZenEvents} from '@Libs/Canvas/Component'
 
 interface ImagePopupState {
   pos: Vector2
   size: Vector2
 }
 
+class Events extends ZenEvents<ImageControl> {
+  isDown: boolean = false
+  offset: Vector2 = Vector2.create()
+  isMove: boolean = false
+  isFirst: boolean = true
+  isDownZoom: boolean = false
+  lastZoom: Vector2 = Vector2.create()
+  lastScale: number = 1
+
+
+  onWheel(event: WheelEvent) {
+    const mouse = Vector2.createFromEvent(event)
+    const scale = this.owner.scale
+    this.owner.zoomToPoint(mouse, event.deltaY < 0 ? scale * 1.1 : scale / 1.1)
+  }
+
+  onMouseDown(event: MouseEvent | TouchEvent) {
+    const mouse: Vector2 = Vector2.createFromEvent(event)
+    this.lastScale = this.owner.scale
+    if ('button' in event && event.button !== 0) {
+      this.isDownZoom = true
+      this.lastZoom = Vector2.createFromEvent(event)
+      return
+    }
+
+    this.isDown = true
+    this.isFirst = false
+    this.offset = VMath.sub(mouse, this.owner.pos)
+    if (this.isMove) {
+      this.isMove = false
+      return
+    }
+
+  }
+
+  onMouseUp(event: MouseEvent | TouchEvent) {
+    if ('button' in event && event.button !== 0) {
+      this.isDownZoom = false
+      return
+    }
+
+    this.isDown = false
+    if (!this.isMove && !this.isFirst) {
+      imagePopupStore.hide()
+      this.isFirst = true
+    }
+  }
+
+  onMouseMove(event: MouseEvent | TouchEvent) {
+    if (this.isDownZoom) {
+      const size = VMath.sub(this.lastZoom, Vector2.createFromEvent(event))
+      const {innerWidth, innerHeight} = window
+      const center = VMath.div(Vector2.create(innerWidth, innerHeight), 2)
+
+      this.owner.zoomToPoint(center, this.lastScale + (size.x / window.innerWidth) * this.owner.scale * 2)
+      return
+    }
+
+    if (!this.isDown) return
+    const mouse: Vector2 = Vector2.createFromEvent(event)
+    this.isMove = true
+    this.owner.pos.set(VMath.sub(mouse, this.offset))
+    this.owner.update()
+  }
+
+  onTouchMove = this.onMouseMove
+  onTouchStart = this.onMouseDown
+  onTouchEnd = this.onMouseUp
+}
 
 class ImageControl {
   readonly pos: Vector2 = Vector2.create()
   readonly originalSize: Vector2 = Vector2.create()
   readonly size: Vector2 = Vector2.create()
   private _scale: number = 1
-  private _point = document.createElement('div')
-  private _point2 = document.createElement('div')
-  private _isDown = false
-  private _offset: Vector2 = Vector2.create()
+  private _events: Events = new Events().setOwner(this)
   image!: HTMLImageElement
   element!: HTMLDivElement
-
-  constructor() {
-    this.onWheel = this.onWheel.bind(this)
-  }
 
   get scale() {
     return this._scale
@@ -76,61 +139,34 @@ class ImageControl {
     })
   }
 
+  zoomToPoint(point: Vector2, scale: number) {
+    const oldScale = this.scale
+    const newScale = scale
+
+    const offset = VMath.div(VMath.sub(point, this.pos), oldScale)
+
+    this.pos.set(
+      point.x - offset.x * newScale,
+      point.y - offset.y * newScale)
+    this.scale = newScale
+
+    this.update()
+  }
+
   setImage(image: HTMLImageElement) {
     this.image = image
     this.image.onload = () => this.onLoad()
     if (image.complete) {
       this.onLoad()
     }
-
-    this.element.appendChild(this._point)
-    this.element.appendChild(this._point2)
-  }
-
-  onWheel(event: WheelEvent) {
-    const mouse = Vector2.create(event.clientX, event.clientY)
-    const oldScale = this.scale
-    const newScale = event.deltaY < 0 ? oldScale * 1.1 : oldScale / 1.1
-
-    const offset = VMath.div(VMath.sub(this.pos, mouse), oldScale)
-
-    this.pos.set(
-      mouse.x - offset.x * newScale,
-      mouse.y - offset.y * newScale)
-    this.scale = newScale
-
-    this.update()
-  }
-
-  onMouseDown(event: MouseEvent) {
-    this._isDown = true
-    const mouse = Vector2.create(event.clientX, event.clientY)
-    this._offset = VMath.sub(mouse, this.pos)
-  }
-
-  onMouseUp() {
-    this._isDown = false
-  }
-
-  onMouseMove(event: MouseEvent) {
-    if (!this._isDown) return
-    const mouse = Vector2.create(event.clientX, event.clientY)
-    this.pos.set(VMath.sub(mouse, this._offset))
-    this.update()
   }
 
   subscribe() {
-    this.element.addEventListener('wheel', this.onWheel.bind(this))
-    this.element.addEventListener('mousedown', this.onMouseDown.bind(this))
-    this.element.addEventListener('mouseup', this.onMouseUp.bind(this))
-    this.element.addEventListener('mousemove', this.onMouseMove.bind(this))
+    this._events.subscribe(this.element)
   }
 
   unsubscribe() {
-    this.element.removeEventListener('wheel', this.onWheel.bind(this))
-    this.element.removeEventListener('mousedown', this.onMouseDown.bind(this))
-    this.element.removeEventListener('mouseup', this.onMouseUp.bind(this))
-    this.element.removeEventListener('mousemove', this.onMouseMove.bind(this))
+    this._events.unsubscribe(this.element)
   }
 }
 
@@ -154,14 +190,13 @@ class ImagePopup extends React.Component<any, ImagePopupState> {
   render() {
     return (<div
       className={clsx(styles.imageViewer, {[styles.show]: imagePopupStore.isShow})}
-      onClick={() => imagePopupStore.hide()}
       ref={this.element}
       onTransitionEnd={() => imagePopupStore.removeAllImages()}
     >
       <img src={imagePopupStore.url}
            alt=""
            style={{
-             position: 'absolute',
+             position: 'absolute'
              // transition: 'left .1s, top .1s, width .1s, height .1s'
            }}
            ref={this.image}/>
