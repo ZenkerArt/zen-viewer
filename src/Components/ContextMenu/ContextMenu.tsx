@@ -3,8 +3,9 @@ import styles from './ContextMenu.module.scss'
 import clsx from 'clsx'
 import MatIcon from '../MatIcon/MatIcon'
 import {observer} from 'mobx-react'
-import {contextMenuStore} from '../../Store/ContextMenuStore'
-import {Vector2} from '../../Libs/Math/Vector2'
+import {contextMenuStore} from '@StoreIndex'
+import {Vector2} from '@Libs/Math'
+import {windowDragHandler} from '@Libs/WindowDragHandler'
 
 export type ContextMenuProps = {}
 export type ContextMenuState = {}
@@ -16,26 +17,30 @@ class ContextMenu extends React.Component<ContextMenuProps, ContextMenuState> {
   constructor(props: ContextMenuProps) {
     super(props)
     this.root = createRef()
-    this.onMouseDown = this.onMouseDown.bind(this)
+    this.onMouseUp = this.onMouseUp.bind(this)
   }
 
-  onMouseDown(event: MouseEvent) {
+  onMouseUp(event: MouseEvent) {
     const target = event.target as HTMLElement
-    if (contextMenuStore.isActive && event.button === 2) {
-      contextMenuStore.setPos(Vector2.create(event.clientX, event.clientY))
+    if (windowDragHandler.isStart) {
+      return
     }
 
-    if (event.button !== 0) return
-
-    contextMenuStore.setActive(this.root.current?.contains(target) || false)
+    if (event.button === 2) {
+      contextMenuStore.setPos(Vector2.create(event.clientX, event.clientY))
+      contextMenuStore.setActive(true)
+    }
+    else {
+      contextMenuStore.setActive(this.root.current?.contains(target) || false)
+    }
   }
 
   componentWillUnmount() {
-    document.removeEventListener('mousedown', this.onMouseDown)
+    document.removeEventListener('mouseup', this.onMouseUp)
   }
 
   componentDidMount() {
-    document.addEventListener('mousedown', this.onMouseDown)
+    document.addEventListener('mouseup', this.onMouseUp)
   }
 
   render() {

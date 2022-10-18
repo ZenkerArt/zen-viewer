@@ -5,6 +5,7 @@ import {observer} from 'mobx-react'
 import {imagePopupStore} from '@StoreIndex'
 import {Vector2, VMath} from '@Libs/Math'
 import {ZenEvents} from '@Libs/Canvas/Component'
+import {MouseButton} from '@Libs/Canvas/Component/ZenEvents'
 
 interface ImagePopupState {
   pos: Vector2
@@ -12,12 +13,9 @@ interface ImagePopupState {
 }
 
 class Events extends ZenEvents<ImageControl> {
-  isDown: boolean = false
   offset: Vector2 = Vector2.create()
   isMove: boolean = false
   isFirst: boolean = true
-  isDownZoom: boolean = false
-  lastZoom: Vector2 = Vector2.create()
   lastScale: number = 1
 
 
@@ -30,13 +28,8 @@ class Events extends ZenEvents<ImageControl> {
   onMouseDown(event: MouseEvent | TouchEvent) {
     const mouse: Vector2 = Vector2.createFromEvent(event)
     this.lastScale = this.owner.scale
-    if ('button' in event && event.button !== 0) {
-      this.isDownZoom = true
-      this.lastZoom = Vector2.createFromEvent(event)
-      return
-    }
+    if ('button' in event && event.button !== 0) return
 
-    this.isDown = true
     this.isFirst = false
     this.offset = VMath.sub(mouse, this.owner.pos)
     if (this.isMove) {
@@ -47,12 +40,8 @@ class Events extends ZenEvents<ImageControl> {
   }
 
   onMouseUp(event: MouseEvent | TouchEvent) {
-    if ('button' in event && event.button !== 0) {
-      this.isDownZoom = false
-      return
-    }
+    if ('button' in event && event.button !== 0) return
 
-    this.isDown = false
     if (!this.isMove && !this.isFirst) {
       imagePopupStore.hide()
       this.isFirst = true
@@ -60,18 +49,19 @@ class Events extends ZenEvents<ImageControl> {
   }
 
   onMouseMove(event: MouseEvent | TouchEvent) {
-    if (this.isDownZoom) {
-      const size = VMath.sub(this.lastZoom, Vector2.createFromEvent(event))
+    if (this.isMouseDown && this.mouseButton !== MouseButton.left) {
+      const size = VMath.sub(this.lastMouse, Vector2.createFromEvent(event))
       const {innerWidth, innerHeight} = window
       const center = VMath.div(Vector2.create(innerWidth, innerHeight), 2)
+      const scale = size.x / window.innerWidth + size.y / window.innerHeight
 
-      this.owner.zoomToPoint(center, this.lastScale + (size.x / window.innerWidth) * this.owner.scale * 2)
+      this.owner.zoomToPoint(center, this.lastScale + scale * this.owner.scale * 3)
       return
     }
 
-    if (!this.isDown) return
+    if (!this.isMouseDown) return
     const mouse: Vector2 = Vector2.createFromEvent(event)
-    this.isMove = true
+    this.isMove = Math.abs(this.lastMouse.length() - mouse.length()) > 10
     this.owner.pos.set(VMath.sub(mouse, this.offset))
     this.owner.update()
   }

@@ -2,10 +2,9 @@ import React from 'react'
 import styles from './DropFile.module.scss'
 import clsx from 'clsx'
 import MatIcon from '../MatIcon/MatIcon'
-import {MatIconCode} from '../MatIcon/MatIconCode'
-import {BlobFile, ExternalFile} from '@Libs/Files/Files'
-import {lstat} from 'node:fs/promises'
-import {folderLoader} from '@Libs/Files/FolderLoader'
+import { MatIconCode } from '../MatIcon/MatIconCode'
+import { BlobFile, ExternalFile } from '@Libs/Files/Files'
+import { folderLoader } from '@Libs/Files/FolderLoader'
 
 export type DropFileProps = {
   onDropFiles?: (files: ExternalFile[]) => void
@@ -27,13 +26,9 @@ async function filesHandler(items: FileList): Promise<ExternalFile[]> {
     const path: string = item.path
 
     if (path.trim() !== '') {
-      const stats = await lstat(path)
-
-      if (stats.isDirectory()) {
-        files = [
-          ...files,
-          ...await folderLoader(path)
-        ]
+      //@ts-ignore
+      if (await window.electronAPI.isDir(path)) {
+        files = [...files, ...(await folderLoader(path))]
         continue
       }
     }
@@ -46,7 +41,7 @@ async function filesHandler(items: FileList): Promise<ExternalFile[]> {
 class DropFile extends React.Component<DropFileProps, DropFileState> {
   constructor(props: DropFileProps) {
     super(props)
-    this.state = {isDrag: false, image: ''}
+    this.state = { isDrag: false, image: '' }
 
     this.drop = this.drop.bind(this)
     this.dragOver = this.dragOver.bind(this)
@@ -54,7 +49,6 @@ class DropFile extends React.Component<DropFileProps, DropFileState> {
     this.dragLeave = this.dragLeave.bind(this)
     this.paste = this.paste.bind(this)
   }
-
 
   async paste(e: ClipboardEvent) {
     const items = e.clipboardData?.files
@@ -81,13 +75,13 @@ class DropFile extends React.Component<DropFileProps, DropFileState> {
 
   dragEnter() {
     this.setState({
-      isDrag: true
+      isDrag: true,
     })
   }
 
   dragLeave() {
     this.setState({
-      isDrag: false
+      isDrag: false,
     })
   }
 
@@ -113,17 +107,25 @@ class DropFile extends React.Component<DropFileProps, DropFileState> {
   }
 
   render() {
-    const {isDrag} = this.state
+    const { isDrag } = this.state
     const classes: Record<string, boolean> = {}
     classes[styles.hover] = isDrag
 
-    return <div className={clsx(styles.dropFile, classes)}
-                onDragLeave={this.dragLeave}
-                onClick={this.dragLeave}>
-      <div className={clsx(styles.border, 'animate__animated', {animate__bounce: isDrag})}>
-        <MatIcon icon={MatIconCode.fileOpen} className={styles.icon}/>
+    return (
+      <div
+        className={clsx(styles.dropFile, classes)}
+        onDragLeave={this.dragLeave}
+        onClick={this.dragLeave}
+      >
+        <div
+          className={clsx(styles.border, 'animate__animated', {
+            animate__bounce: isDrag,
+          })}
+        >
+          <MatIcon icon={MatIconCode.fileOpen} className={styles.icon} />
+        </div>
       </div>
-    </div>
+    )
   }
 }
 

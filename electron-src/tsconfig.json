@@ -1,12 +1,6 @@
 {
   "compilerOptions": {
-    "baseUrl": "src",
-    "paths": {
-      "@Libs/*": ["Libs/*"],
-      "@Components/*": ["Components/*"],
-      "@Store/*": ["Store/*"],
-      "@StoreIndex": ["Store/index.ts"]
-    },
+    "baseUrl": "./",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "target": "esnext",
@@ -28,9 +22,8 @@
     "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "isolatedModules": true,
+//    "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx"
   },
   "include": [
     "src"

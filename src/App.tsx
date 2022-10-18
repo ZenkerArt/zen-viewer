@@ -6,12 +6,10 @@ import ContextMenu from './Components/ContextMenu/ContextMenu'
 import ImagePopup from './Components/ImagePopup/ImagePopup'
 import {ZenGrid} from '@Libs/Canvas/Components'
 import ImagesGrid from '@Components/ImagesGrid/ImagesGrid'
-import TitleBar from '@Components/TitleBar/TitleBar'
 
 function App() {
   const [image, setImage] = useState<ExternalFile[]>([])
   const {current: grid} = useRef(new ZenGrid())
-
 
   useEffect(() => {
     grid.setImages(image)
@@ -19,7 +17,6 @@ function App() {
 
   return (
     <div className="App">
-      <TitleBar/>
       <ContextMenu/>
       <ImagePopup/>
       <ImagesGrid grid={grid}/>

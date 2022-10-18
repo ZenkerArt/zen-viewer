@@ -1,13 +1,15 @@
 import {ExternalFile, SystemFile} from './Files'
-import {readdir} from 'node:fs/promises'
-import {contentType} from 'mime-types'
-import {join} from 'path'
+// import {readdir} from 'node:fs/promises'
+// import {join} from 'path'
 
 async function folderLoader(path: string): Promise<ExternalFile[]> {
-  const files = []
+  const files: SystemFile[] = []
 
-  for (const file of await readdir(path)) {
-    const ext = contentType(file)
+  // @ts-ignore
+  for (const file of await window.electronAPI.scanDir(path)) {
+
+    // @ts-ignore
+    const ext = window.electronAPI.contentType(file)
     if (!ext) {
       continue
     }
@@ -15,7 +17,7 @@ async function folderLoader(path: string): Promise<ExternalFile[]> {
     if (!ext.includes('image')) {
       continue
     }
-    files.push(new SystemFile(join(path, file), ext))
+    files.push(new SystemFile(file, ext))
   }
 
   return files

@@ -57,6 +57,10 @@ export class Vector2 {
     }
   }
 
+  length() {
+    return Math.sqrt(this._x ** 2 + this._y ** 2)
+  }
+
   get x(): number {
     return this._x
   }

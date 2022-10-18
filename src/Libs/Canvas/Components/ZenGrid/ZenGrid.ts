@@ -5,6 +5,7 @@ import {ContextActionRemoveFile, ContextActionShowFile} from '@Store/ContextMenu
 import {ZenGridScroll} from './ZenGridScroll'
 import {ZenImage} from '../index'
 import {ZenComponentGroup, ZenEvents} from '@Libs/Canvas/Component'
+import {MouseButton} from '@Libs/Canvas/Component/ZenEvents'
 
 
 export interface ZenGridOptions {
@@ -23,6 +24,8 @@ function contextMenuGrid(grid: ZenGrid, item: ZenImage) {
 
 export class ZenGridEvents extends ZenEvents<ZenGrid> {
   lastTouch: Vector2 = Vector2.create()
+  isMove: boolean = false
+  lastScroll: number = 0
 
   onWheel(event: WheelEvent) {
     const comp = this.owner
@@ -30,7 +33,8 @@ export class ZenGridEvents extends ZenEvents<ZenGrid> {
     comp.scroll.smoothScroll += comp.canvas.height / 5 * factor
   }
 
-  onMouseDown(event: MouseEvent) {
+  onMouseUp(event: MouseEvent) {
+    if (this.isMove) return
     this.owner.images.forEach(item => {
       const offset = 0
 
@@ -44,10 +48,22 @@ export class ZenGridEvents extends ZenEvents<ZenGrid> {
         }
 
         if (event.button === 2) {
-          contextMenuStore.showActions(contextMenuGrid(this.owner, item))
+          contextMenuStore.setActions(contextMenuGrid(this.owner, item))
         }
       }
     })
+  }
+
+  onMouseMove(event: MouseEvent) {
+    this.isMove = true
+    if (this.isMouseDown && this.mouseButton === MouseButton.left) {
+      this.owner.scroll.scrollY(this.lastScroll + (event.clientY - this.lastMouse.y))
+    }
+  }
+
+  onMouseDown(event: MouseEvent) {
+    this.lastScroll = this.owner.scroll.scroll
+    this.isMove = false
   }
 
   onResizeCanvas(oldSize: Vector2, newSize: Vector2) {
@@ -61,7 +77,7 @@ export class ZenGridEvents extends ZenEvents<ZenGrid> {
 
   onTouchMove(event: TouchEvent) {
     const touch = event.touches[0]
-    this.owner.scroll.scrollY(touch.clientY - this.lastTouch.y)
+    this.owner.scroll.scrollY(touch.clientY - this.lastMouse.y)
   }
 
   onScroll(value: number, smooth: boolean) {

@@ -1,34 +1,16 @@
-import {ExternalFile} from '../Files/Files'
-import {Socket} from 'node:net'
-import * as Buffer from 'buffer'
+import {ExternalFile} from '@Libs/Files'
 
 const canvas = document.createElement('canvas')
 const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
 
-export function sharpImage(path: string, rescale: number = 1024): Promise<HTMLImageElement> {
-  const client = new Socket()
-
-  client.connect(8080, '127.0.0.1', function () {
-    client.write(JSON.stringify({
-      path: path,
-      rescale: rescale
-    }))
+export async function sharpImage(path: string, rescale: number = 1024): Promise<HTMLImageElement> {
+  // @ts-ignore
+  const image = await window.electronAPI.loadImage(path, rescale)
+  const blob = new Blob(image, {
+    type: 'image/jpeg'
   })
 
-  return new Promise((resolve, reject) => {
-    const chunks: Buffer[] = []
-
-    client.on('close', function () {
-      const blob = new Blob(chunks, {
-        type: 'image/jpeg'
-      })
-      resolve(loadImageUrl(URL.createObjectURL(blob)))
-    })
-
-    client.on('data', function (data) {
-      chunks.push(data)
-    })
-  })
+  return await loadImageUrl(URL.createObjectURL(blob))
 }
 
 

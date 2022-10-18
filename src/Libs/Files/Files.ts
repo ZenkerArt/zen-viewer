@@ -1,4 +1,4 @@
-import {readFile} from 'node:fs/promises'
+// import {readFile} from 'node:fs/promises'
 
 interface ExternalFile {
   id: string
@@ -54,7 +54,7 @@ class SystemFile implements ExternalFile {
   }
 
   async loadBuffer() {
-    return await readFile(this._path)
+    return new Buffer('')
   }
 
   async loadUrl() {

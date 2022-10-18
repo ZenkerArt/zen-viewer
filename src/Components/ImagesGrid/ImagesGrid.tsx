@@ -6,6 +6,7 @@ import ZenRange from '@Components/ZenRange/ZenRange'
 import ZenCanvas from '@Components/ZenCanvas/ZenCanvas'
 import {ZenTransform} from '@Libs/Canvas/Component'
 import {Vector2} from '@Libs/Math'
+import {windowDragHandler} from '@Libs/WindowDragHandler'
 
 export type GridControlsProps = {
   grid: ZenGrid
@@ -50,7 +51,7 @@ class ImagesGrid extends React.Component<GridControlsProps, GridControlsState> {
       collide = true
     }
 
-    if (collide !== this.state.show) {
+    if (collide !== this.state.show && !windowDragHandler.isStart) {
       this.setState({
         show: collide
       })

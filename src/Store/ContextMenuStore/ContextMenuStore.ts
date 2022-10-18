@@ -1,6 +1,6 @@
 import {action, makeObservable, observable} from 'mobx'
-import {MatIconCode} from '../../Components/MatIcon/MatIconCode'
-import {Vector2} from '../../Libs/Math/Vector2'
+import {MatIconCode} from '@Components/MatIcon/MatIconCode'
+import {Vector2} from '@Libs/Math'
 import {contextMenuStore} from './index'
 
 type BoolFunc = boolean | void | Promise<boolean> | Promise<never>

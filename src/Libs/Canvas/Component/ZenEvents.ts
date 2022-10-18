@@ -9,16 +9,25 @@ interface ZenEvent {
 }
 
 function subDomEvent(event: keyof DocumentEventMap) {
-  return (target: any, propertyKey: keyof ZenEvents) => {
+  return (target: any, propertyKey: string) => {
     events.push({
-      functionName: propertyKey,
+      functionName: propertyKey as keyof ZenEvents,
       eventName: event
     })
   }
 }
 
+export enum MouseButton {
+  left,
+  middle,
+  right
+}
+
 export abstract class ZenEvents<T = ZenComponent> {
   owner!: T
+  isMouseDown: boolean = false
+  lastMouse: Vector2 = Vector2.create()
+  mouseButton: MouseButton = MouseButton.left
 
   constructor() {
     for (let event of events) {
@@ -37,6 +46,20 @@ export abstract class ZenEvents<T = ZenComponent> {
     return this
   }
 
+  @subDomEvent('mousedown')
+  private _onMouseDown(event: MouseEvent) {
+    this.onMouseDown(event)
+    this.isMouseDown = true
+    this.lastMouse = Vector2.createFromEvent(event)
+    this.mouseButton = event.button
+  }
+
+  @subDomEvent('mouseup')
+  private _onMouseUp(event: MouseEvent) {
+    this.onMouseUp(event)
+    this.isMouseDown = false
+  }
+
   @subDomEvent('touchstart')
   onTouchStart(event: TouchEvent) {
   }
@@ -52,11 +75,9 @@ export abstract class ZenEvents<T = ZenComponent> {
   @subDomEvent('mousemove')
   onMouseMove(event: MouseEvent) {}
 
-  @subDomEvent('mousedown')
   onMouseDown(event: MouseEvent) {
   }
 
-  @subDomEvent('mouseup')
   onMouseUp(event: MouseEvent) {
   }
 

@@ -72,6 +72,8 @@ declare module '*.module.sass' {
 
 declare global {
   interface Window {
-    require: NodeRequire;
+    electronAPI: {
+      contentType: (value: string) => string
+    }
   }
 }

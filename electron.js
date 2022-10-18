@@ -1,7 +1,11 @@
+const {WindowDrag} = require('./electron-src/electron-context/index')
 const path = require('path');
 
-const {app, BrowserWindow, session} = require('electron');
+const {app, BrowserWindow, ipcMain} = require('electron');
 const isDev = require('electron-is-dev');
+
+let interval
+const dragWindow = new WindowDrag()
 
 function createWindow() {
     // session.defaultSession.loadExtension('./src/vpn').then(console.log)
@@ -10,14 +14,28 @@ function createWindow() {
         width: 800,
         height: 600,
         frame: false,
+        zoomToPageWidth: false,
         webPreferences: {
             nodeIntegration: true,
-            contextIsolation: false
+            preload: path.join(__dirname, './electron-src/preload.js')
         },
     });
+    dragWindow.setWindow(win)
+    win.once('ready-to-show', () => {
+        win.webContents.setZoomFactor(1)
+    })
+
+    ipcMain.on('start-drag-window', () => {
+        dragWindow.start()
+        interval = setInterval(dragWindow.update, 10)
+    })
+
+    ipcMain.on('stop-drag-window', () => {
+        dragWindow.stop(interval)
+    })
+
     app.commandLine.appendSwitch('js-flags', '--expose_gc --max-old-space-size=128')
 
-    // win.setMenu(null)
     // and load the index.html of the app.
     // win.loadFile("index.html");
     win.loadURL(

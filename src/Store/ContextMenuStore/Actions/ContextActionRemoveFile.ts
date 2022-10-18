@@ -1,5 +1,5 @@
 import {ContextMenuAction} from '../ContextMenuStore'
-import {MatIconCode} from '../../../Components/MatIcon/MatIconCode'
+import {MatIconCode} from '@Components/MatIcon/MatIconCode'
 import {ExternalFile} from '@Libs/Files/Files'
 
 export class ContextActionRemoveFile extends ContextMenuAction {
