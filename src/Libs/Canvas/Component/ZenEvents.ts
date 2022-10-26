@@ -6,13 +6,15 @@ const events: ZenEvent[] = []
 interface ZenEvent {
   functionName: keyof ZenEvents
   eventName: keyof DocumentEventMap
+  element?: HTMLElement | Window | Document
 }
 
-function subDomEvent(event: keyof DocumentEventMap) {
+function subDomEvent(event: keyof DocumentEventMap, element?: HTMLElement | Window | Document) {
   return (target: any, propertyKey: string) => {
     events.push({
       functionName: propertyKey as keyof ZenEvents,
-      eventName: event
+      eventName: event,
+      element
     })
   }
 }
@@ -28,6 +30,7 @@ export abstract class ZenEvents<T = ZenComponent> {
   isMouseDown: boolean = false
   lastMouse: Vector2 = Vector2.create()
   mouseButton: MouseButton = MouseButton.left
+  resizeObserver?: ResizeObserver
 
   constructor() {
     for (let event of events) {
@@ -54,10 +57,14 @@ export abstract class ZenEvents<T = ZenComponent> {
     this.mouseButton = event.button
   }
 
+  @subDomEvent('mouseup', window)
+  private _onMouseUpWindow(event: MouseEvent) {
+    this.isMouseDown = false
+  }
+
   @subDomEvent('mouseup')
   private _onMouseUp(event: MouseEvent) {
     this.onMouseUp(event)
-    this.isMouseDown = false
   }
 
   @subDomEvent('touchstart')
@@ -85,6 +92,10 @@ export abstract class ZenEvents<T = ZenComponent> {
   onWheel(event: WheelEvent) {
   }
 
+  onResize = () => {
+
+  }
+
   onResizeCanvas(oldSize: Vector2, newSize: Vector2) {
   }
 
@@ -94,8 +105,10 @@ export abstract class ZenEvents<T = ZenComponent> {
       if (typeof func !== 'function') {
         continue
       }
-      element.addEventListener(event.eventName, func as any)
+      (event.element ?? element).addEventListener(event.eventName, func as any)
     }
+    this.resizeObserver = new ResizeObserver(this.onResize)
+    this.resizeObserver.observe(element)
   }
 
   unsubscribe(element: HTMLElement) {
@@ -104,7 +117,8 @@ export abstract class ZenEvents<T = ZenComponent> {
       if (typeof func !== 'function') {
         continue
       }
-      element.removeEventListener(event.eventName, func as any)
+      (event.element ?? element).removeEventListener(event.eventName, func as any)
     }
+    this.resizeObserver?.disconnect()
   }
 }

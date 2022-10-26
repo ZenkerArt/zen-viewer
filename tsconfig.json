@@ -5,7 +5,8 @@
       "@Libs/*": ["Libs/*"],
       "@Components/*": ["Components/*"],
       "@Store/*": ["Store/*"],
-      "@StoreIndex": ["Store/index.ts"]
+      "@StoreIndex": ["Store/index.ts"],
+      "@Electron/": ["../electron-src"],
     },
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,

@@ -6,6 +6,7 @@ import ContextMenu from './Components/ContextMenu/ContextMenu'
 import ImagePopup from './Components/ImagePopup/ImagePopup'
 import {ZenGrid} from '@Libs/Canvas/Components'
 import ImagesGrid from '@Components/ImagesGrid/ImagesGrid'
+import ZenAlert from '@Components/ZenAlert/ZenAlert'
 
 function App() {
   const [image, setImage] = useState<ExternalFile[]>([])
@@ -17,6 +18,7 @@ function App() {
 
   return (
     <div className="App">
+      <ZenAlert/>
       <ContextMenu/>
       <ImagePopup/>
       <ImagesGrid grid={grid}/>

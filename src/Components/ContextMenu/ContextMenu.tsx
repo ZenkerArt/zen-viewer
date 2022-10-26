@@ -1,4 +1,4 @@
-import React, {createRef} from 'react'
+import React, {createRef, useState} from 'react'
 import styles from './ContextMenu.module.scss'
 import clsx from 'clsx'
 import MatIcon from '../MatIcon/MatIcon'
@@ -6,9 +6,28 @@ import {observer} from 'mobx-react'
 import {contextMenuStore} from '@StoreIndex'
 import {Vector2} from '@Libs/Math'
 import {windowDragHandler} from '@Libs/WindowDragHandler'
+import {ContextMenuAction} from '@Store/ContextMenuStore'
+import ZenRadioButton from '@Components/ZenRadioButton/ZenRadioButton'
 
 export type ContextMenuProps = {}
 export type ContextMenuState = {}
+
+function Item({context}: {context: ContextMenuAction}) {
+  const [active, setActive] = useState(context.isActive)
+
+  context.onChangeState = setActive
+  return <div key={context.label}
+              className={styles.contextMenuItem}
+              onClick={() => {
+                context.execute()
+              }}>
+    <MatIcon icon={context.icon} className={styles.icon}/>
+    {context.label}
+    {context.showState ? <div className={styles.left}>
+      <ZenRadioButton active={active} />
+    </div> : ''}
+  </div>
+}
 
 @observer
 class ContextMenu extends React.Component<ContextMenuProps, ContextMenuState> {
@@ -29,8 +48,7 @@ class ContextMenu extends React.Component<ContextMenuProps, ContextMenuState> {
     if (event.button === 2) {
       contextMenuStore.setPos(Vector2.create(event.clientX, event.clientY))
       contextMenuStore.setActive(true)
-    }
-    else {
+    } else {
       contextMenuStore.setActive(this.root.current?.contains(target) || false)
     }
   }
@@ -43,8 +61,16 @@ class ContextMenu extends React.Component<ContextMenuProps, ContextMenuState> {
     document.addEventListener('mouseup', this.onMouseUp)
   }
 
+  get actions() {
+    return [
+      ...contextMenuStore.actions,
+      ...contextMenuStore.globalActions
+    ]
+  }
+
   render() {
-    const {actions, isActive} = contextMenuStore
+    const {isActive} = contextMenuStore
+    const actions = this.actions
 
     return (
       <div className={clsx(styles.contextMenu, {[styles.show]: isActive})}
@@ -56,16 +82,7 @@ class ContextMenu extends React.Component<ContextMenuProps, ContextMenuState> {
         {
           actions
             .filter(item => item?.poll() || true)
-            .map(item =>
-              <div key={item.label}
-                   className={styles.contextMenuItem}
-                   onClick={() => {
-                     item.execute()
-                   }}>
-                <MatIcon icon={item.icon} className={styles.icon}/>
-                {item.label}
-              </div>
-            )
+            .map((item, index) => <Item context={item} key={index}/>)
         }
       </div>
     )

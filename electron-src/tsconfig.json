@@ -1,31 +1,9 @@
 {
   "compilerOptions": {
-    "baseUrl": "./",
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "target": "esnext",
-    "types": [
-      "reflect-metadata"
-    ],
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
-    "allowJs": true,
-    "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
-    "module": "esnext",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-//    "isolatedModules": true,
-    "noEmit": true,
-  },
-  "include": [
-    "src"
-  ]
+    "moduleResolution": "Node",
+    "module": "CommonJS",
+    "target": "ES6"
+  }
 }

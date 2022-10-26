@@ -1,8 +1,7 @@
-import {ContextMenuAction} from '../ContextMenuStore'
 import {ExternalFile} from '@Libs/Files/Files'
 import {MatIconCode} from '@Components/MatIcon/MatIconCode'
-
-// const electron = window.require('electron')
+import {ContextMenuAction} from '@Store/ContextMenuStore/ContextMenuAction'
+import {electronAPI} from '@Libs/ElectronAPI'
 
 export class ContextActionShowFile extends ContextMenuAction {
   icon: MatIconCode = MatIconCode.folderOpen
@@ -15,7 +14,7 @@ export class ContextActionShowFile extends ContextMenuAction {
   }
 
   execute() {
-    // electron.shell.showItemInFolder(this.file.path)
+    electronAPI.fileSys.showFile(this.file.path)
     this.hideMenu()
   }
 

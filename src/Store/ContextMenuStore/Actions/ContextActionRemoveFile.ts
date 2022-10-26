@@ -1,6 +1,6 @@
-import {ContextMenuAction} from '../ContextMenuStore'
 import {MatIconCode} from '@Components/MatIcon/MatIconCode'
 import {ExternalFile} from '@Libs/Files/Files'
+import {ContextMenuAction} from '@Store/ContextMenuStore/ContextMenuAction'
 
 export class ContextActionRemoveFile extends ContextMenuAction {
   label = 'Удалить'

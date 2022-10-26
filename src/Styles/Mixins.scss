@@ -1,0 +1,6 @@
+@mixin surface {
+  border-radius: 10px;
+  background: var(--surface);
+  backdrop-filter: blur(10px);
+  box-shadow: rgba(0, 0, 0, .50) 4px 0 10px;
+}

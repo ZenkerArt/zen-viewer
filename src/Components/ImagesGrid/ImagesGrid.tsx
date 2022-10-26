@@ -1,12 +1,15 @@
 import React from 'react'
 import styles from './ImagesGrid.module.scss'
 import clsx from 'clsx'
-import {ZenGrid} from '@Libs/Canvas/Components'
+import {ZenGrid, ZenImage} from '@Libs/Canvas/Components'
 import ZenRange from '@Components/ZenRange/ZenRange'
 import ZenCanvas from '@Components/ZenCanvas/ZenCanvas'
 import {ZenTransform} from '@Libs/Canvas/Component'
 import {Vector2} from '@Libs/Math'
-import {windowDragHandler} from '@Libs/WindowDragHandler'
+import {alertStore, appStore} from '@StoreIndex'
+import {observer} from 'mobx-react'
+import {ZenImageLoader} from '@Libs/Canvas/Components/ZenGrid/ZenImageLoader'
+import {AlertLoading} from '@Store/AlertStore'
 
 export type GridControlsProps = {
   grid: ZenGrid
@@ -16,9 +19,10 @@ export type GridControlsState = {
   show: boolean
 }
 
-
+@observer
 class ImagesGrid extends React.Component<GridControlsProps, GridControlsState> {
   ui: React.RefObject<HTMLDivElement> = React.createRef()
+  alertLoading?: AlertLoading
 
   constructor(props: GridControlsProps) {
     super(props)
@@ -51,15 +55,40 @@ class ImagesGrid extends React.Component<GridControlsProps, GridControlsState> {
       collide = true
     }
 
-    if (collide !== this.state.show && !windowDragHandler.isStart) {
+    if (collide !== this.state.show) {
       this.setState({
         show: collide
       })
     }
   }
 
+  onImageLoaded = (loader: ZenImageLoader, image: ZenImage) => {
+    this.alertLoading?.setValue(loader.loadedImageCount)
+  }
+  onImageStart = (loader: ZenImageLoader, image: ZenImage[]) => {
+    if (loader.imageCount === 0) return;
+    this.alertLoading = alertStore.alertLoading(loader.imageCount)
+  }
+  onImageEnd = (loader: ZenImageLoader, image: ZenImage[]) => {
+    this.alertLoading?.destroy()
+  }
+
+  componentDidMount() {
+    this.props.grid.imageLoader.onImageLoaded.on(this.onImageLoaded)
+    this.props.grid.imageLoader.onEndLoad.on(this.onImageEnd)
+    this.props.grid.imageLoader.onStartLoad.on(this.onImageStart)
+  }
+
+  componentWillUnmount() {
+    this.props.grid.imageLoader.onImageLoaded.off(this.onImageLoaded)
+    this.props.grid.imageLoader.onEndLoad.off(this.onImageEnd)
+    this.props.grid.imageLoader.onStartLoad.off(this.onImageStart)
+  }
+
   render() {
     const {grid} = this.props
+    const {show} = this.state
+    const isShow = {[styles.show]: show && !appStore.isPaused}
 
     return (
       <div className={clsx(styles.imagesGrid)}
@@ -70,8 +99,7 @@ class ImagesGrid extends React.Component<GridControlsProps, GridControlsState> {
           width: '100vw',
           height: '100%'
         }}/>
-
-        <div className={clsx(styles.ui, {[styles.show]: this.state.show})} ref={this.ui}>
+        <div className={clsx(styles.ui, isShow)} ref={this.ui}>
           <div>
             <ZenRange min={1}
                       max={10}

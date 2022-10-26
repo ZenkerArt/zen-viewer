@@ -68,11 +68,21 @@ class ZenRange extends React.Component<ZenRangeProps, ZenRangeState> {
   }
 
   get thinness() {
-    const thin = this.props.thinness || 10
+    const thin = this.props.thinness || 2
     return thin + this.state.thinness
   }
 
   changeValue(value: number) {
+    value = Math.round(value * this.max)
+
+    if (value > this.max || value < this.min) {
+      return
+    }
+
+    if (value === this.value) {
+      return
+    }
+
     if (this.props.value) {
       this.props.onChange?.(value)
     }
@@ -94,17 +104,6 @@ class ZenRange extends React.Component<ZenRangeProps, ZenRangeState> {
     else {
       let x = (event.touches[0].clientX - this.lastTouch) / .3
       value = x / width + this.lastValue
-      console.log(value, this.lastValue)
-    }
-
-    value = Math.round(value * this.max)
-
-    if (value > this.max || value < this.min) {
-      return
-    }
-
-    if (value === this.value) {
-      return
     }
 
     this.changeValue(value)
@@ -121,7 +120,9 @@ class ZenRange extends React.Component<ZenRangeProps, ZenRangeState> {
     this.isDown = true
     this.calcSliderPos(e)
   }
-
+  onWheel = (event: React.WheelEvent) => {
+    this.changeValue((this.value + event.deltaY > 0 ? 1 : -1) / this.max)
+  }
   componentDidMount() {
     document.addEventListener('mouseup', this.onMouseUp)
     document.addEventListener('touchend', this.onMouseUp)
@@ -145,7 +146,9 @@ class ZenRange extends React.Component<ZenRangeProps, ZenRangeState> {
 
   render() {
     return (
-      <div className={clsx(styles.range, this.props.className, {[styles.show]: this.isDown})}>
+      <div className={clsx(styles.range, this.props.className, {[styles.show]: this.isDown})}
+           onWheel={this.onWheel}
+      >
         <div className={styles.text}>{this.props.text}</div>
         <div
           onMouseDown={this.onMouseDown}

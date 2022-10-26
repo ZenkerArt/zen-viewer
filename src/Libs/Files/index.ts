@@ -1,5 +1,4 @@
-import {BlobFile, SystemFile, ExternalFile} from './Files'
-import {folderLoader} from './FolderLoader'
+import {BlobFile, SystemFile, ExternalFile, filesLoader, folderLoader} from './Files'
 
 export type {
   ExternalFile
@@ -7,5 +6,6 @@ export type {
 export {
   BlobFile,
   SystemFile,
-  folderLoader
+  folderLoader,
+  filesLoader
 }

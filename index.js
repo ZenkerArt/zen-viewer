@@ -1,11 +1,12 @@
 const {WindowDrag} = require('./electron-src/electron-context/index')
 const path = require('path');
 
-const {app, BrowserWindow, ipcMain} = require('electron');
-const isDev = require('electron-is-dev');
+const {app, BrowserWindow, ipcMain, ipcRenderer} = require('electron')
+const isDev = require('electron-is-dev')
 
 let interval
 const dragWindow = new WindowDrag()
+const callbacks = []
 
 function createWindow() {
     // session.defaultSession.loadExtension('./src/vpn').then(console.log)
@@ -25,6 +26,10 @@ function createWindow() {
         win.webContents.setZoomFactor(1)
     })
 
+    ipcMain.on('always-on-top', (event, value) => {
+        win.setAlwaysOnTop(value, 'screen-saver')
+    })
+
     ipcMain.on('start-drag-window', () => {
         dragWindow.start()
         interval = setInterval(dragWindow.update, 10)
@@ -34,14 +39,18 @@ function createWindow() {
         dragWindow.stop(interval)
     })
 
+    win.on('close', (e)  => {
+        win.webContents.send('quit')
+    })
+
     app.commandLine.appendSwitch('js-flags', '--expose_gc --max-old-space-size=128')
 
     // and load the index.html of the app.
-    // win.loadFile("index.html");
+    // win.loadURL(`file://${path.join(__dirname, '/build/index.html')}`)
     win.loadURL(
         isDev
             ? 'http://localhost:3000'
-            : `file://${path.join(__dirname, '../build/index.html')}`
+            : `file://${path.join(__dirname, '/build/index.html')}`
     );
     // Open the DevTools.
     if (isDev) {
@@ -49,16 +58,17 @@ function createWindow() {
     }
 }
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
+
+
 app.whenReady().then(createWindow);
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
+
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
+        callbacks.forEach(c => c())
         app.quit();
     }
 });

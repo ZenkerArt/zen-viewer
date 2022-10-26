@@ -1,4 +1,7 @@
 import {Vector2, VMath} from '@Libs/Math'
+import {appStore} from '@StoreIndex'
+import {AppState} from '@Store/AppStore'
+import {electronAPI} from '@Libs/ElectronAPI'
 
 export class WindowDragHandler {
   lastClick = Vector2.create()
@@ -12,10 +15,11 @@ export class WindowDragHandler {
   }
   onMouseUp = (e: MouseEvent) => {
     if (e.button !== 2) return
-    //@ts-ignore
-    window.electronAPI.stopMove()
+
+    electronAPI.thisWindow.stopMove()
     this.isStart = false
     this.isDown = false
+    appStore.rollbackState()
   }
 
   onMouseMove = (e: MouseEvent) => {
@@ -24,8 +28,8 @@ export class WindowDragHandler {
 
     if (length > 20 && !this.isStart && this.isDown) {
       this.isStart = true
-      //@ts-ignore
-      window.electronAPI.startMove()
+      electronAPI.thisWindow.startMove()
+      appStore.setState(AppState.windowMove)
     }
   }
 

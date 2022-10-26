@@ -1,4 +1,46 @@
-// import {readFile} from 'node:fs/promises'
+import {electronAPI} from '@Libs/ElectronAPI'
+
+export async function filesLoader(items: FileList): Promise<ExternalFile[]> {
+  let files: ExternalFile[] = []
+
+  if (items === undefined) {
+    return []
+  }
+
+  for (const item of Array.from(items)) {
+    // @ts-ignore
+    const path: string = item.path
+
+    if (path.trim() !== '') {
+      if (await electronAPI.fileSys.isDir(path)) {
+        files = [...files, ...(await folderLoader(path))]
+        continue
+      }
+    }
+
+    files.push(new BlobFile(item))
+  }
+  return files
+}
+
+export async function folderLoader(path: string): Promise<ExternalFile[]> {
+  const files: SystemFile[] = []
+
+  for (const file of await electronAPI.fileSys.scanDir(path)) {
+
+    const ext = electronAPI.fileSys.contentType(file)
+    if (!ext) {
+      continue
+    }
+
+    if (!ext.includes('image')) {
+      continue
+    }
+    files.push(new SystemFile(file, ext))
+  }
+
+  return files
+}
 
 interface ExternalFile {
   id: string
@@ -12,7 +54,6 @@ class BlobFile implements ExternalFile {
   id: string
   path: string
   private readonly _file: File
-  // private _url?: string
 
   constructor(file: File) {
     this._file = file
@@ -54,7 +95,7 @@ class SystemFile implements ExternalFile {
   }
 
   async loadBuffer() {
-    return new Buffer('')
+    return await electronAPI.fileSys.readFile(this._path)
   }
 
   async loadUrl() {

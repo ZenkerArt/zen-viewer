@@ -1,6 +1,5 @@
 .range {
   user-select: none;
-  display: flex;
   border-radius: 10px;
   align-items: center;
 }
@@ -17,9 +16,10 @@
   right: 0;
   width: 10px;
   height: 10px;
-  //transform: translateY(-50%);
+  top: 1.5px;
+  transform: translateX(50%) translateY(-50%);
   border-radius: 20px;
-  transition: transform .2s;
+  transition: width .2s, height .2s;
 }
 
 .sliderContainer {
@@ -30,11 +30,13 @@
 }
 .slider {
   border-radius: 10px;
+  margin-top: 18px;
   background: var(--accent);
   position: relative;
   transition: width .1s, height .5s;
   display: flex;
   align-content: center;
+  justify-content: center;
 }
 
 .info {
@@ -46,7 +48,7 @@
   opacity: 0;
   border-radius: 100px;
   top: 100%;
-  margin-top: 10px;
+  margin-top: 25px;
   right: 0;
   z-index: 99;
   transition: transform .2s, opacity .2s;
@@ -58,6 +60,8 @@
     opacity: 1;
   }
   .circle {
-    transform: scale(1.8);
+    width: 15px;
+    height: 15px;
+    //transform: scale(1.8);
   }
 }

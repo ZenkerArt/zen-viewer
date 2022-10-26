@@ -1,26 +1,14 @@
 import {action, makeObservable, observable} from 'mobx'
-import {MatIconCode} from '@Components/MatIcon/MatIconCode'
 import {Vector2} from '@Libs/Math'
-import {contextMenuStore} from './index'
-
-type BoolFunc = boolean | void | Promise<boolean> | Promise<never>
-
-export abstract class ContextMenuAction {
-  icon?: MatIconCode
-  label: string = ''
-
-  hideMenu() {
-    contextMenuStore.setActive(false)
-  }
-
-  poll(): BoolFunc {
-    return true
-  }
-
-  abstract execute(): BoolFunc
-}
+import {ContextActionAlwaysOnTop} from '@Store/ContextMenuStore/Actions'
+import {ContextMenuAction} from '@Store/ContextMenuStore/ContextMenuAction'
+import {ContextActionReload} from '@Store/ContextMenuStore/Actions/ContextActionReload'
 
 export class ContextMenuStore {
+  globalActions: ContextMenuAction[] = [
+    new ContextActionAlwaysOnTop(),
+    new ContextActionReload(),
+  ]
   @observable actions: ContextMenuAction[] = []
   @observable isActive: boolean = false
   @observable pos: Vector2 = Vector2.create()
@@ -36,6 +24,9 @@ export class ContextMenuStore {
 
   @action
   setActive(value: boolean) {
+    if (!value) {
+      this.actions = []
+    }
     this.isActive = value
   }
 

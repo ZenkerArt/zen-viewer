@@ -6,7 +6,7 @@ import {ZenGridScroll} from './ZenGridScroll'
 import {ZenImage} from '../index'
 import {ZenComponentGroup, ZenEvents} from '@Libs/Canvas/Component'
 import {MouseButton} from '@Libs/Canvas/Component/ZenEvents'
-
+import {ZenImageLoader} from '@Libs/Canvas/Components/ZenGrid/ZenImageLoader'
 
 export interface ZenGridOptions {
   gap: number
@@ -35,15 +35,26 @@ export class ZenGridEvents extends ZenEvents<ZenGrid> {
 
   onMouseUp(event: MouseEvent) {
     if (this.isMove) return
-    this.owner.images.forEach(item => {
+    this.owner.images.forEach((item, index) => {
       const offset = 0
 
       const collide = item.transform.isCollide(Vector2.create(event.offsetX, event.offsetY + offset))
 
       if (collide) {
         if (event.button === 0) {
+          const pos = Vector2.create(
+            item.transform.posOffset.x,
+            item.transform.posOffset.y
+          )
           item.file.loadUrl().then(url => {
-            imagePopupStore.show(url)
+            imagePopupStore.setImages(
+              this.owner.images.map(i => i.file),
+              index
+            )
+            imagePopupStore.show(url, {
+              size: Vector2.create(),
+              pos
+            })
           })
         }
 
@@ -90,28 +101,32 @@ export class ZenGridEvents extends ZenEvents<ZenGrid> {
 }
 
 export class ZenGrid extends ZenComponentGroup<ZenImage> {
-  private _images: ZenImage[] = []
   private _isLoaded: boolean = true
   private _grid: Record<number, ZenImage[]> = []
   private _options: ZenGridOptions = {gap: 0, colCount: 4}
+  private readonly _imagesLoader: ZenImageLoader = new ZenImageLoader()
   readonly scroll: ZenGridScroll
   events = new ZenGridEvents()
+  files: ExternalFile[] = []
 
   constructor() {
     super()
     this.scroll = new ZenGridScroll(this.events)
-    this.update = this.update.bind(this)
+  }
+
+  get imageLoader() {
+    return this._imagesLoader
   }
 
   get images() {
-    return this._images
+    return this._children
   }
 
   updateClip() {
     const offset = this.scroll.scroll
     const {height} = this.canvas
 
-    for (const image of this._images) {
+    for (const image of this.images) {
       const rect = image.transform.rect
 
       const top = rect.bottom + offset > -500
@@ -137,40 +152,37 @@ export class ZenGrid extends ZenComponentGroup<ZenImage> {
     }
   }
 
-  async loadImages(images: ZenImage[]) {
-    this._isLoaded = false
-    for (const image of images) {
-      await image.load()
-      this.update((item) => {
-        if (item.id === image.id) {
-          const {position} = item.transform
-          item.setSpawnPoint(position)
-        }
-      })
-    }
-    this._isLoaded = true
+  private addImage = (imageLoader: ZenImageLoader, image: ZenImage) => {
+    this.update((item) => {
+      if (item.id === image.id) {
+        const {position} = item.transform
+        item.setSpawnPoint(position)
+      }
+    })
+  }
+  private setImage = (loader: ZenImageLoader, images: ZenImage[]) => {
+    this.clear()
+    // @ts-ignore
+    global.gc()
+
+    this.addComponent(images)
   }
 
   setImages(images: ExternalFile[]) {
     if (!this._isLoaded) return
-    this.clear()
+    const imgs = images.map(image => new ZenImage().setFile(image as ExternalFile))
 
-    // @ts-ignore
-    global.gc()
-
-    this._images = images.map(image => new ZenImage().setFile(image as ExternalFile))
-    this.addComponent(this._images)
-    this.loadImages(this._images)
+    this.scroll.scrollY(0, false)
+    this._imagesLoader.loadImages(imgs)
   }
 
   removeImage(image: ZenImage) {
-    this._images = this._images.filter(item => item.id !== image.id)
     this._children = this._children.filter(item => item.id !== image.id)
     image.destroy()
     this.update()
   }
 
-  update(handler?: (item: ZenImage) => void) {
+  update = (handler?: (item: ZenImage) => void) => {
     let col = 0
     const {gap, colCount} = this._options
     const sizes: Record<number, number> = {}
@@ -181,7 +193,7 @@ export class ZenGrid extends ZenComponentGroup<ZenImage> {
       grid[col] = []
     }
 
-    this._images.forEach(item => {
+    this.images.forEach(item => {
       item.setWidth(this.canvas.width / colCount - gap)
 
       const {position, size} = item.transform
@@ -220,6 +232,17 @@ export class ZenGrid extends ZenComponentGroup<ZenImage> {
     })
     this.update()
     this.scroll.restorePosition()
+  }
+
+  mount(): this {
+    this._imagesLoader.onImageLoaded.on(this.addImage)
+    this._imagesLoader.onStartLoad.on(this.setImage)
+    return super.mount()
+  }
+
+  protected onDestroy() {
+    this._imagesLoader.onImageLoaded.off(this.addImage)
+    this._imagesLoader.onStartLoad.off(this.setImage)
   }
 
   protected render(): void {

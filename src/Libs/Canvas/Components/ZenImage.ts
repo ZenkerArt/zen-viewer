@@ -5,19 +5,21 @@ import {ZenComponent} from '@Libs/Canvas/Component'
 
 class ImageInfo {
   size: Vector2 = Vector2.create()
-  aspect: number = 1
+  aspectX: number = 1
+  aspectY: number = 1
   element: HTMLImageElement
 
   constructor(image: HTMLImageElement) {
     this.element = image
     this.size.set(image.naturalWidth, image.naturalHeight)
-    this.aspect = image.naturalHeight / image.naturalWidth
+    this.aspectX = image.naturalWidth / image.naturalHeight
+    this.aspectY = image.naturalHeight / image.naturalWidth
   }
 
   getNewSize(width: number): Vector2 {
     return Vector2.create(
       width,
-      width * this.aspect
+      width * this.aspectY
     )
   }
 
@@ -33,12 +35,8 @@ export class ZenImage extends ZenComponent {
   private _size: Vector2 = new Vector2()
   private _pos: Vector2 = new Vector2()
   file!: ExternalFile
-  image?: ImageInfo
+  imageInfo?: ImageInfo
   isEnable: boolean = false
-
-  get isLoaded() {
-    return this._loaded
-  }
 
   get id(): string {
     return this.file.id
@@ -49,13 +47,29 @@ export class ZenImage extends ZenComponent {
     return this
   }
 
-  async load() {
+  loadFromUrl(url: string): Promise<HTMLImageElement> {
+    const image = new Image()
+    image.src = url
+
+    return new Promise((resolve, reject) => {
+      image.onload = () => {
+        this.imageInfo = new ImageInfo(image)
+        this.isEnable = true
+        resolve(image)
+      }
+      image.onerror = () => {
+        reject()
+      }
+    })
+  }
+
+  async load(size = 1024) {
     if (this._loaded) {
       return this
     }
 
-    const image = await sharpImage(this.file.path)
-    this.image = new ImageInfo(image)
+    const image = await sharpImage(this.file.path, size)
+    this.imageInfo = new ImageInfo(image)
 
     this.isEnable = true
     this._loaded = true
@@ -63,8 +77,8 @@ export class ZenImage extends ZenComponent {
   }
 
   setWidth(width: number) {
-    if (this.image)
-      this.transform.size.set(this.image.getNewSize(width))
+    if (this.imageInfo)
+      this.transform.size.set(this.imageInfo.getNewSize(width))
     return this
   }
 
@@ -72,9 +86,13 @@ export class ZenImage extends ZenComponent {
     this._pos.set(pos)
   }
 
+  setSpawnSize(pos: Vector2) {
+    this._size.set(pos)
+  }
+
   protected onDestroy() {
-    if (this.image)
-      this.image.destroy()
+    if (this.imageInfo)
+      this.imageInfo.destroy()
   }
 
   get deltaPos() {
@@ -85,13 +103,13 @@ export class ZenImage extends ZenComponent {
     const ctx = this.ctx
     const {offset, position, size} = this.transform
 
-    if (this.image) {
+    if (this.imageInfo) {
       this._pos = VMath.lerp(this._pos, position, .1)
       this._size = VMath.lerp(this._size, size, .1)
 
       const pos = VMath.add(this._pos, offset)
 
-      ctx.drawImage(this.image.element, ...pos.tuple, ...this._size.tuple)
+      ctx.drawImage(this.imageInfo.element, ...pos.tuple, ...this._size.tuple)
     }
   }
 }

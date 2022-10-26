@@ -1,0 +1,25 @@
+.zenRadioButton {
+  width: 8px;
+  height: 8px;
+  border-radius: 10px;
+  border: solid var(--text) 2px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &::after {
+    content: "";
+    position: absolute;
+    width: calc(100% - 2px);
+    height:  calc(100% - 2px);
+    border-radius: 10px;
+    background: transparent;
+    transition: background-color .2s;
+  }
+  &.active {
+    &::after {
+      background: var(--text);
+    }
+  }
+}

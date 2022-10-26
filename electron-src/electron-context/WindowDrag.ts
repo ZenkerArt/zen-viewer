@@ -1,11 +1,11 @@
 import {BrowserWindow, screen} from 'electron'
 
 export function lerp(start: number, end: number, speed: number) {
-  let value = (1 - speed) * start + speed * end
-  if (Math.abs(value) < .1 || Math.abs(start - end) < .1) {
+  if ( Math.abs(start - end) < .1) {
     return end
   }
-  return value
+
+  return (1 - speed) * start + speed * end
 }
 
 export class WindowDrag {
@@ -18,8 +18,24 @@ export class WindowDrag {
   pos = {x: 0, y: 0}
   size = {x: 0, y: 0}
 
+  setLast() {
+    const bounds = this.window.getBounds()
+    const cursor = screen.getCursorScreenPoint()
+
+    this._lastSize = {
+      x: bounds.width,
+      y: bounds.height
+    }
+
+    this._offset = {
+      x: bounds.x - cursor.x,
+      y: bounds.y - cursor.y
+    }
+  }
+
   setWindow(window: BrowserWindow) {
     this._window = window
+    this.setLast()
   }
 
   get window() {
@@ -38,20 +54,10 @@ export class WindowDrag {
 
   start = () => {
     const cursor = screen.getCursorScreenPoint()
-    const bounds = this.window.getBounds()
     this._screenSize = screen.getDisplayNearestPoint(cursor).bounds
-
-    this._lastSize = {
-      x: bounds.width,
-      y: bounds.height
-    }
-    this._offset = {
-      x: bounds.x - cursor.x,
-      y: bounds.y - cursor.y
-    }
+    this.setLast()
 
     Object.assign(this._size, this._lastSize)
-    this._pos = {x: bounds.x, y: bounds.y}
   }
 
   stop = (interval: number) => {

@@ -1,0 +1,84 @@
+@import "src/Styles";
+
+.transition {
+  height: 0;
+  margin-bottom: 0;
+  transition: height .5s, margin-bottom .5s, opacity .5s;
+  opacity: 0;
+
+  &.show {
+    height: 80px;
+    margin-bottom: 10px;
+    opacity: 1;
+  }
+}
+
+
+.zenAlert {
+  z-index: 10;
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  max-width: 600px;
+  box-sizing: border-box;
+}
+
+.alert {
+  @include surface;
+  width: 600px;
+  bottom: 0;
+  height: 100%;
+  padding: 0 25px;
+  box-sizing: border-box;
+  align-items: center;
+  color: var(--text);
+  display: flex;
+  margin-bottom: 10px;
+  white-space: nowrap;
+
+  .icon {
+    font-size: 20px;
+    margin-right: 20px;
+  }
+
+  .text {
+    margin-right: 20px;
+  }
+
+  .state {
+    margin-left: auto;
+  }
+
+  .on {
+    color: var(--green);
+  }
+
+  .off {
+    color: var(--red);
+  }
+}
+
+.loading {
+  height: 2px;
+  width: 100%;
+  background: #575F66;
+  border-radius: 10px;
+  overflow: hidden;
+
+  > div {
+    background: var(--accent);
+    transition: width .5s;
+    height: 100%;
+  }
+}
+
+@media screen and (max-width: 900px) {
+  .alert {
+    max-width: 80vw;
+  }
+  .zenAlert {
+    max-width: 80vw;
+  }
+}

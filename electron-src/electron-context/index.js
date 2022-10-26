@@ -1,5 +1,5 @@
 "use strict";
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 exports.WindowDrag = void 0;
-var WindowDrag_1 = require("./WindowDrag");
-exports.WindowDrag = WindowDrag_1.WindowDrag;
+const WindowDrag_1 = require("./WindowDrag");
+Object.defineProperty(exports, "WindowDrag", { enumerable: true, get: function () { return WindowDrag_1.WindowDrag; } });

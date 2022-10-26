@@ -2,9 +2,8 @@ import React from 'react'
 import styles from './DropFile.module.scss'
 import clsx from 'clsx'
 import MatIcon from '../MatIcon/MatIcon'
-import { MatIconCode } from '../MatIcon/MatIconCode'
-import { BlobFile, ExternalFile } from '@Libs/Files/Files'
-import { folderLoader } from '@Libs/Files/FolderLoader'
+import {MatIconCode} from '../MatIcon/MatIconCode'
+import {ExternalFile, filesLoader} from '@Libs/Files/Files'
 
 export type DropFileProps = {
   onDropFiles?: (files: ExternalFile[]) => void
@@ -14,29 +13,6 @@ export type DropFileState = {
   image: string
 }
 
-async function filesHandler(items: FileList): Promise<ExternalFile[]> {
-  let files: ExternalFile[] = []
-
-  if (items === undefined) {
-    return []
-  }
-
-  for (const item of Array.from(items)) {
-    // @ts-ignore
-    const path: string = item.path
-
-    if (path.trim() !== '') {
-      //@ts-ignore
-      if (await window.electronAPI.isDir(path)) {
-        files = [...files, ...(await folderLoader(path))]
-        continue
-      }
-    }
-
-    files.push(new BlobFile(item))
-  }
-  return files
-}
 
 class DropFile extends React.Component<DropFileProps, DropFileState> {
   constructor(props: DropFileProps) {
@@ -57,7 +33,7 @@ class DropFile extends React.Component<DropFileProps, DropFileState> {
       return
     }
 
-    this.props.onDropFiles?.(await filesHandler(items))
+    this.props.onDropFiles?.(await filesLoader(items))
   }
 
   async drop(event: DragEvent) {
@@ -70,7 +46,7 @@ class DropFile extends React.Component<DropFileProps, DropFileState> {
       return
     }
 
-    this.props.onDropFiles?.(await filesHandler(items))
+    this.props.onDropFiles?.(await filesLoader(items))
   }
 
   dragEnter() {

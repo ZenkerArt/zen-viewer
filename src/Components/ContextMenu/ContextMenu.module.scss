@@ -1,16 +1,20 @@
+@import "src/Styles";
+
 .contextMenu {
+  @include surface;
+
+  user-select: none;
   position: fixed;
   opacity: 0;
   pointer-events: none;
+  white-space: nowrap;
   z-index: 99999999;
   transition: opacity .25s, transform .25s;
   transform-origin: top center;
-  background: #111;
   min-width: 200px;
-  border-radius: 5px;
   overflow: hidden;
-  border: solid thin #333;
   transform: scaleY(0);
+  padding: 20px 0;
 }
 
 .show {
@@ -21,18 +25,24 @@
 
 .icon {
   font-size: 16px;
-  margin-right: 10px;
+  margin-right: 16px;
+}
+
+.left {
+  margin-left: auto;
+  padding-left: 30px;
 }
 
 .contextMenuItem {
+  padding: 10px 25px;
   font-size: 16px;
-  color: rgba(255, 255, 255, .8);
-  padding: 10px;
-  background: rgba(0, 0, 0, 0);
-  transition: background .25s, color .25s;
+  color: var(--text);
+  background: transparent;
+  transition: background .15s, color .15s;
   cursor: pointer;
+  display: flex;
+  align-items: center;
   &:hover {
-    background: rgba(255, 255, 255, .2);
     color: var(--accent);
   }
 }

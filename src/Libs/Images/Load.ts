@@ -1,14 +1,11 @@
 import {ExternalFile} from '@Libs/Files'
+import {electronAPI} from '@Libs/ElectronAPI'
 
 const canvas = document.createElement('canvas')
 const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
 
 export async function sharpImage(path: string, rescale: number = 1024): Promise<HTMLImageElement> {
-  // @ts-ignore
-  const image = await window.electronAPI.loadImage(path, rescale)
-  const blob = new Blob(image, {
-    type: 'image/jpeg'
-  })
+  const blob = await electronAPI.dataProtocol.requestImage(path, rescale)
 
   return await loadImageUrl(URL.createObjectURL(blob))
 }
@@ -17,10 +14,7 @@ export async function sharpImage(path: string, rescale: number = 1024): Promise<
 function loadImageUrl(url: string, image?: HTMLImageElement): Promise<HTMLImageElement> {
   image = image || document.createElement('img')
 
-  if (image === undefined) {
-    throw new Error('Image is undefined')
-  }
-
+  image.decoding = 'async'
   image.src = url
 
   return new Promise((resolve, reject) => {

@@ -84,6 +84,7 @@ class ZenCanvas extends React.Component<ZenCanvasProps, any> {
 
   renderTick() {
     const {ctx, canvasInfo} = this
+    ctx.getTransform()
     ctx.clearRect(0, 0, canvasInfo.width, canvasInfo.height)
     this.component.tick()
   }
